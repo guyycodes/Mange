@@ -1,0 +1,51 @@
+<!doctype html>
+<html lang="en">
+  <head>
+    <meta charset="UTF-8" />
+    <link rel="icon" type="image/svg+xml" href="/vite.svg" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <meta charset="utf-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1" />
+    <title>Mange Nutrition System</title>
+    <style>
+      @import url("https://fonts.googleapis.com/css?family=DM+Sans:var(--paragraph-font-weight),var(--heading-5-font-weight),var(--heading-6-font-weight)|Plus+Jakarta+Sans:var(--heading-4-font-weight),var(--heading-3-font-weight),var(--heading-2-font-weight),var(--heading-1-font-weight)");
+      @import url("https://cdnjs.cloudflare.com/ajax/libs/meyer-reset/2.0/reset.min.css");
+      * {
+        -webkit-font-smoothing: antialiased;
+        box-sizing: border-box;
+      }
+      html,
+      body {
+        background-color: #040203;
+        background-image: 
+          linear-gradient(to left, 
+            rgba(4, 2, 3, 0) 30%, 
+            rgba(4, 2, 3, 1) 100%
+          ),
+          url('https://imgur.com/k9a68j3.png');
+        background-position: right;
+        background-repeat: no-repeat;
+        background-attachment: fixed;
+        background-size: auto 100%, auto 100%;
+      }
+      #root {
+        min-height: 100vh;
+        position: relative;
+        z-index: 1;
+      }
+      /* a blue color as a generic focus style */
+      button:focus-visible {
+        outline: 2px solid #4a90e2 !important;
+        outline: -webkit-focus-ring-color auto 5px !important;
+      }
+      a {
+        text-decoration: none;
+      }
+    </style>
+    <link href="./stylesguide.css" rel="stylesheet" />
+  </head>
+  <body>
+    <div id="root"></div>
+    <script type="module" src="./src/main.jsx"></script>
+  </body>
+</html>

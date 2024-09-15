@@ -1,0 +1,35 @@
+version: '3.8'
+
+services:
+  mysql-mange:
+    container_name: mysql-mange
+    image: mysql:latest
+    ports:
+      - "3306:3306"
+    environment:
+      MYSQL_ROOT_PASSWORD: rootpassword
+      MYSQL_DATABASE: mange-java
+      MYSQL_USER: devs
+      MYSQL_PASSWORD: devspassword
+    volumes:
+      - mysql-master-data:/var/lib/mysql
+    networks:
+      - mange-network
+
+  myapp-server:
+    container_name: myapp-server
+    build: 
+      context: ./server
+      dockerfile: Dockerfile
+    ports:
+      - "8080:8080"
+    depends_on:
+      - mysql-mange
+    networks:
+      - mange-network
+
+networks:
+  mange-network:
+
+volumes:
+  mysql-master-data:

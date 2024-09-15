@@ -1,0 +1,13 @@
+# Use the official MySQL image as the base
+FROM mysql:latest
+
+
+# Copy your script into the container
+COPY entrypoint.sh /usr/local/bin/entrypoint.sh
+RUN chmod +x /usr/local/bin/entrypoint.sh
+
+# Inform Docker that the container listens on port 3306
+EXPOSE 3306
+
+# Optional: You can set the custom script to run when the container starts
+# CMD ["/usr/local/bin/entrypoint.sh"]
