@@ -52,7 +52,6 @@ export const FooterSection = () => {
    * @function
    * @param {string} clickedText - The text of the clicked link
    */
-
   const handleRouting = (clickedText) => {
     dispatch({ type: REGISTRATION, payload: clickedText === 'Registration' ? 1 : 0 });
     dispatch({ type: LEARN, payload: clickedText === 'Learn' ? 1 : 0 });

@@ -1,7 +1,12 @@
 import {
     HOME, 
     REGISTRATION,
-    LEARN
+    LEARN,
+    VALID_USER,
+    INVALID_USER,
+    JWT,
+    VERIFY_LOGIN,
+    FALLBACK
  } from '../actions/actions'
 
 export const reducer = (state, action) => {
@@ -14,6 +19,21 @@ export const reducer = (state, action) => {
         }
         case (LEARN) : {
             return {...state, learn: action.payload}
+        }
+        case (VALID_USER) : {
+            return {...state, validUser: action.payload}
+        }
+        case (INVALID_USER) : {
+            return {...state, invalidUser: action.payload}
+        }
+        case (JWT) : {
+            return {...state, jwt: action.payload}
+        }
+        case (VERIFY_LOGIN) : {
+            return {...state, verifyLogin: action.payload}
+        }
+        case (FALLBACK) : {
+            return {...state, fallback: action.payload}
         }
     }
 }

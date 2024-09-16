@@ -51,7 +51,7 @@ export const HeroSection = () => {
   return (
     <StyledHeroSection>
     <Container maxWidth="lg">
-        <Stack spacing={10}> {/* This adds a 5rem (40px) gap between child elements */}
+        <Stack spacing={10}> {/* This adds a 5rem gap between child elements */}
           <Navigation />
           <TitleTextsButton />
           <FlexContainer>

@@ -11,6 +11,11 @@ const initialState = {
         registration: "",
         home: "",
         learn:"",
+        invalidUser:"",
+        validUser:"",
+        verifyLogin:"",
+        fallback:"",
+        jwt: {} || "",
     }
   };
 

@@ -1,0 +1,1 @@
+export { SignUpImage } from "./SignUpImg";
