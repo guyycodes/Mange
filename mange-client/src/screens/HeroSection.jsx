@@ -50,7 +50,7 @@ const FlexContainer = styled(Box)(({ theme }) => `
 export const HeroSection = () => {
   return (
     <StyledHeroSection>
-    <Container maxWidth="lg">
+      <Container maxWidth="lg">
         <Stack spacing={10}> {/* This adds a 5rem gap between child elements */}
           <Navigation />
           <TitleTextsButton />
