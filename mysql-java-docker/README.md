@@ -3,8 +3,13 @@
 1) Download Docker Desktop
 2) Download MySql Workbench to connect a GUI to the SQL database
 3) Install it, watch a tutorial on docker from youtube
-4) * For MySql container run this command: 
+  - if you haven already, create the bridge network:
+    ```bash
+    docker network create mange-network
+    ```
+4) * For MySql container run this command:
 docker run --name mysql-mange \
+  --network mange-network \
   -e MYSQL_ROOT_PASSWORD=rootpassword \
   -e MYSQL_DATABASE=mange-java \
   -e MYSQL_USER=devs \

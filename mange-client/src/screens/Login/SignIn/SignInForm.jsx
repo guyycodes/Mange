@@ -14,7 +14,7 @@ import { validate } from '../../../util/validate/validateLogin'
 import { useRouteContext } from '../../../util/context/routeContext';
 import { VALID_USER } from "../../../util/actions/actions";
 
-export const SignInForm = ({ createUser, parseURL, UseHook_SendRequest }) => {
+export const SignInForm = ({ createUser, UseHook_SendRequest }) => {
 
   const loginFormRef = useRef(null);
   const { dispatch } = useRouteContext();
@@ -71,7 +71,18 @@ export const SignInForm = ({ createUser, parseURL, UseHook_SendRequest }) => {
         //set timeout for 1 second
         setTimeout(() => {
           setSpinner(false);
-          parseURL(path) // this will re-route from the parent depending on the response
+
+          // Get the query string which starts with '?' and remove the '?' with slice(1)
+          const queryString = window.location.search.slice(1);
+
+          // Create a URLSearchParams object from the query string
+          const params = new URLSearchParams(queryString);
+
+          // Get the value of the 'token' parameter
+          const token = params.get('token');
+
+          handleRouting('ValidUser', token)
+          
       }, 2250);
       })
       .catch((error) => {

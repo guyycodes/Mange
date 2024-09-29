@@ -28,13 +28,14 @@ export const USE_CUSTOM_POST_HOOK = (url, method = 'POST') => {
     
     try {
       const result = await axios({
-        method,
-        url,
-        body,
+        method: method,
+        url: url,
+        data: data,  // Pass object directly
+        headers: { 'Content-Type': 'application/json' }  // Optional: Axios sets it automatically for objects
       });
       if (result.status >= 200 && result.status < 300) {
-        setResponse(result.data);
-        return result.data; // Return the response data
+        setResponse(result);
+        return result; // Return the response data
       } else {
         throw new Error(`HTTP error! status: ${result.status}`);
       }

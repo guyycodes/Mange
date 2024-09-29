@@ -10,4 +10,4 @@ RUN chmod +x /usr/local/bin/entrypoint.sh
 EXPOSE 3306
 
 # Optional: You can set the custom script to run when the container starts
-# CMD ["/usr/local/bin/entrypoint.sh"]
+CMD ["/usr/local/bin/entrypoint.sh"]

@@ -1,11 +1,9 @@
-// GeminiService.java
 package com.mange.mange.service;
 
 import org.springframework.stereotype.Service;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Autowired;
-//import com.mange.mange.config.GeminiConfig.ConversationService;
 
 /**
  * Role: Business Logic

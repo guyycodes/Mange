@@ -1,80 +1,22 @@
-package com.mange.mange.models;
+package com.mange.mange.DTO;
 
 import java.util.Date;
 
-import org.springframework.security.crypto.bcrypt.BCryptPasswordEncoder;
-
-import jakarta.persistence.Column;
-import jakarta.persistence.Entity;
-import jakarta.persistence.GeneratedValue;
-import jakarta.persistence.GenerationType;
-import jakarta.persistence.Id;
-import jakarta.persistence.Table;
-import jakarta.persistence.Temporal;
-import jakarta.persistence.TemporalType;
-
-@Entity
-@Table(name = "users")
-public class User {
-
-    @Id
-    @GeneratedValue(strategy = GenerationType.IDENTITY)
-    private Long id;
-
-    @Column(nullable = false)
+public class NewUserDTO {
     private String firstName;
-
-    @Column(nullable = false)
     private String lastName;
-
-    @Column(nullable = false, unique = true)
     private String email;
-
-    @Column(nullable = false)
-    private String password;
-
-    @Column
     private String phone;
-
-    @Column
     private String gender;
-
-    @Column
+    private String confirmPassword;
     private String countryCode;
-
-    @Column
-    @Temporal(TemporalType.DATE)
     private Date dateOfBirth;
-
-    @Column
     private boolean notifications;
-
-    @Column
+    private String password;
     private String role;
-
-    @Column(columnDefinition = "TEXT")
-    private String profileImage;
-
-    // Default constructor
-    public User() {}
-
-    // Constructor with fields
-    public User(String firstName, String lastName, String email, String password) {
-        this.firstName = firstName;
-        this.lastName = lastName;
-        this.email = email;
-        setPassword(password);  // Encrypt password upon user creation
-    }
+    private String profileImage;  // base64 string identifier
 
     // Getters and setters for all fields
-    public Long getId() {
-        return id;
-    }
-
-    public void setId(Long id) {
-        this.id = id;
-    }
-
     public String getFirstName() {
         return firstName;
     }
@@ -99,15 +41,6 @@ public class User {
         this.email = email;
     }
 
-    public String getPassword() {
-        return password;
-    }
-
-    public void setPassword(String password) {
-        BCryptPasswordEncoder passwordEncoder = new BCryptPasswordEncoder();
-        this.password = passwordEncoder.encode(password);
-    }
-
     public String getPhone() {
         return phone;
     }
@@ -122,6 +55,14 @@ public class User {
 
     public void setGender(String gender) {
         this.gender = gender;
+    }
+
+    public String getConfirmPassword() {
+        return confirmPassword;
+    }
+
+    public void setConfirmPassword(String confirmPassword) {
+        this.confirmPassword = confirmPassword;
     }
 
     public String getCountryCode() {
@@ -146,6 +87,14 @@ public class User {
 
     public void setNotifications(boolean notifications) {
         this.notifications = notifications;
+    }
+
+    public String getPassword() {
+        return password;
+    }
+
+    public void setPassword(String password) {
+        this.password = password;
     }
 
     public String getRole() {

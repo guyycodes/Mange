@@ -15,7 +15,7 @@
     <description>A Gemini wrapper, for nutrition recommendations</description>
 
     <properties>
-        <java.version>17</java.version>
+        <java.version>20</java.version>
         <langchain4j.version>0.31.0</langchain4j.version>
     </properties>
 

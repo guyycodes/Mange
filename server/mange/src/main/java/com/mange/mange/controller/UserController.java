@@ -1,82 +1,74 @@
- package com.mange.mange.controller;
-// /**
-//  * Client
-//  * │
-//  * │ (HTTP Request)
-//  * ▼
-//  * Controller
-//  * │
-//  * │ (Method call with params)
-//  * ▼
-//  * Service
-//  * │
-//  * │ (Business logic / Method call)
-//  * ▼
-//  * Repository
-//  * │
-//  * │ (Database operation)
-//  * ▼
-//  * Model / Database
-//  * │
-//  * │ (Results / Data)
-//  * ▲
-//  * Repository
-//  * │
-//  * │ (Processed data / Entities)
-//  * ▲
-//  * Service
-//  * │
-//  * │ (Optional additional processing)
-//  * ▲
-//  * Controller
-//  * │
-//  * │ (HTTP Response)
-//  * ▲
-//  * Client
-//  */
+package com.mange.mange.controller;
 
- import com.mange.mange.models.User;
- import com.mange.mange.service.UserService;
- import org.springframework.beans.factory.annotation.Autowired;
- import org.springframework.http.HttpStatus;
- import org.springframework.http.ResponseEntity;
- import org.springframework.web.bind.annotation.*;
+import com.mange.mange.DTO.NewUserDTO;
+import com.mange.mange.exceptions.UserAlreadyExistsException;
+import com.mange.mange.exceptions.UserNotFoundException;
+import com.mange.mange.models.User;
+import com.mange.mange.service.UserService;
+import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.http.HttpStatus;
+import org.springframework.http.ResponseEntity;
+import org.springframework.web.bind.annotation.*;
 
- import java.util.List;
+import java.util.List;
 
- @RestController
- @RequestMapping("/api/users")
- public class UserController {
+@RestController
+@RequestMapping("/api/users")
+public class UserController {
 
-     private final UserService userService;
+    private final UserService userService;
 
-     @Autowired
-     public UserController(UserService userService) {
-         this.userService = userService;
-     }
+    @Autowired
+    public UserController(UserService userService) {
+        this.userService = userService;
+    }
 
-     @PostMapping
-     public ResponseEntity<User> createUser(@RequestBody User user) {
-         User newUser = userService.createUser(user);
-         return new ResponseEntity<>(newUser, HttpStatus.CREATED);
-     }
+    @PostMapping("/create")
+    public ResponseEntity<String> createUser(@RequestBody NewUserDTO newUserDTO) {
+        try {
+            userService.createUser(newUserDTO);
+            return ResponseEntity.status(200).body("User created successfully");
+        } catch (UserAlreadyExistsException e) {
+            return ResponseEntity.status(409).body(e.getMessage());
+        } catch (Exception e) {
+            return ResponseEntity.status(500).body("An error occurred while creating the user");
+        }
+    }
 
-     @GetMapping
-     public ResponseEntity<List<User>> getAllUsers() {
-         List<User> users = userService.getAllUsers();
-         return new ResponseEntity<>(users, HttpStatus.OK);
-     }
+    @GetMapping
+    public ResponseEntity<List<User>> getAllUsers() {
+        List<User> users = userService.getAllUsers();
+        return ResponseEntity.ok(users);
+    }
 
-     @GetMapping("/{id}")
-     public ResponseEntity<User> getUserById(@PathVariable Long id) {
-         return userService.getUserById(id)
-                 .map(user -> new ResponseEntity<>(user, HttpStatus.OK))
-                 .orElse(new ResponseEntity<>(HttpStatus.NOT_FOUND));
-     }
+    @GetMapping("/{id}")
+    public ResponseEntity<?> getUserById(@PathVariable Long id) {
+        try {
+            User user = userService.getUserById(id);
+            return ResponseEntity.ok(user);
+        } catch (UserNotFoundException e) {
+            return ResponseEntity.status(HttpStatus.NOT_FOUND).body(e.getMessage());
+        }
+    }
 
-     @DeleteMapping("/{id}")
-     public ResponseEntity<Void> deleteUser(@PathVariable Long id) {
-         userService.deleteUser(id);
-         return new ResponseEntity<>(HttpStatus.NO_CONTENT);
-     }
- }
+    @PutMapping("/{id}")
+    public ResponseEntity<?> updateUser(@PathVariable Long id, @RequestBody User user) {
+        user.setId(id);
+        try {
+            User updatedUser = userService.updateUser(user);
+            return ResponseEntity.ok(updatedUser);
+        } catch (UserNotFoundException e) {
+            return ResponseEntity.status(HttpStatus.NOT_FOUND).body(e.getMessage());
+        }
+    }
+
+    @DeleteMapping("/{id}")
+    public ResponseEntity<?> deleteUser(@PathVariable Long id) {
+        try {
+            userService.deleteUser(id);
+            return ResponseEntity.ok("User deleted successfully");
+        } catch (UserNotFoundException e) {
+            return ResponseEntity.status(HttpStatus.NOT_FOUND).body(e.getMessage());
+        }
+    }
+}

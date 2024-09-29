@@ -24,9 +24,6 @@ public class GeminiConfig {
     @Value("${spring.cloud.gcp.location}")
     private String location;
 
-    @Value("${spring.cloud.gcp.credentials.location}")
-    private String credentialsPath;
-
     @Bean
     public ChatLanguageModel geminiChatModel() {
         return VertexAiGeminiChatModel.builder()
@@ -35,6 +32,8 @@ public class GeminiConfig {
                 .modelName("gemini-1.5-flash-001") // or the appropriate model name
                 .temperature(0.7f)
                 .maxOutputTokens(2048)
+                .topK(40)
+                .topP(0.95f)
                 .build();
     }
 
@@ -45,4 +44,3 @@ public class GeminiConfig {
                 .build();
     }
 }
-

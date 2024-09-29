@@ -1,0 +1,6 @@
+target/
+.git/
+.mvn/
+mvnw
+mvnw.cmd
+google-credentials

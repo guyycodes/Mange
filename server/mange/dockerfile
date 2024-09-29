@@ -1,0 +1,25 @@
+# Use the official Maven image with Java 17 to create a build artifact
+FROM maven:3.9-openjdk-20 AS build
+
+WORKDIR /usr/src/app
+
+COPY pom.xml .
+
+# Copy the project files to the container
+COPY src ./src
+
+# Build the application
+RUN mvn clean package -DskipTests
+
+# Use the same version of OpenJDK for running the application
+FROM openjdk:20-oracle
+
+WORKDIR /app
+
+# Copy only the built artifact from the build stage
+COPY --from=build /usr/src/app/target/*.jar app.jar
+
+EXPOSE 8080
+
+# Command to run the application
+CMD ["java", "-jar", "app.jar"]

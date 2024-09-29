@@ -42,7 +42,7 @@ export const SignInSection = ({ checksum }) => { // the checksum is passed all t
     const [spinner, setSpinner] = useState()
     const [fadeOut, setFadeOut] = useState(false);
     const [fullScreenSpinner, setFullScreenSpinner] = useState(false);
-
+    const [userValidation, setUserValidation] = useState(false);
 
     /**
    * Custom hook to send the form data to the server.
@@ -57,93 +57,73 @@ export const SignInSection = ({ checksum }) => { // the checksum is passed all t
         error: formError,
         response,
         LoadComponent: LoadingStatusIndicator
-    } = USE_CUSTOM_POST_HOOK('http://your-api-endpoint/register', 'POST');
+    } = USE_CUSTOM_POST_HOOK('http://localhost:8080/api/users/create', 'POST');
 
-    /**
-     * Parses the URL from the server response and navigates to the corresponding route via context api.
-     * 
-     * @param {string} d - Server response containing the URL
-     */
-    const parseURL = (d) =>{
 
-      let {url, data} = d;
-      // Get the last part, which is the URL
-      url = d.split(' ').slice(-1)[0];
-      // Parse the URL and get the pathname
-      const pathname = new URL(url).pathname;
-      console.log('path: ', pathname)
+  const handleRouting = (result, data) => {
+      dispatch({ type: VALID_USER, payload: result === 'ValidUser' ? 1 : 0 });
+      dispatch({ type: VERIFY_LOGIN, payload: result === 'VerifyLogin' ? 1 : 0 });
+      dispatch({ type: INVALID_USER, payload: result === 'InvalidUser' ? 1 : 0 });
+      dispatch({ type: FALLBACK, payload: result === 'Fallback' ? 1 : 0 });
+      dispatch({ type: JWT, payload: result === 'ValidUser' ? data : null });
+    };
 
-        // error -> invalid screen
-      if(pathname === '/login/isValid'){ /// create an account after attempting to login
-        // Oauth user -> straight to account
-        // existing user -> straight to account
-        handleRouting('ValidUser', data)
-      }
-      else if(pathname === '/login/verify'){ /// authenticate the login attempt of a valid user
-        // new user -> validate
-        setCreateUser(false);
-        setAskNewUser(true)
-      }
-      else{  /// fallback screen for unusual errors
-        handleRouting('Fallback')
-      }
-    }
+  /**
+   * Submits user data to the server for account creation.
+   * @param {Object} theFormData - User form data
+   * @param {string} theFormData.role - User role (e.g., 'user')
+   */
+  const submitUser = async (theFormData) =>{
+  /// this handles the submission of a new user
+    try{
+      // call server and send the data
+      if(userValidation){
 
-    const handleRouting = (result, data) => {
-        dispatch({ type: VALID_USER, payload: result === 'ValidUser' ? 1 : 0 });
-        dispatch({ type: VERIFY_LOGIN, payload: result === 'VerifyLogin' ? 1 : 0 });
-        dispatch({ type: INVALID_USER, payload: result === 'InvalidUser' ? 1 : 0 });
-        dispatch({ type: FALLBACK, payload: result === 'Fallback' ? 1 : 0 });
-        dispatch({ type: JWT, payload: result === 'ValidUser' ? data : null });
-      };
-
-    /**
-     * Submits user data to the server for account creation or verification.
-     * 
-     * @param {Object} theFormData - User form data
-     * @param {string} theFormData.role - User role (e.g., 'volunteer')
-     * @param {string} [theFormData.key] - SHA256 checksum for account verification
-     */
-    const submitUser = async (theFormData) =>{
-
-        try{
-            const response = await UseHook_SendRequest(theFormData) //'http://localhost:3000/api/signup/create'
-              
-              console.log("the form data: ", theFormData)
-              const data = await response.text();
-
-              if(response.ok){
-                parseURL(data); // url if user exists
-              }else{
-                parseURL(data); // url if user doesnt exist
-              }
-            }catch(err){
-              console.log(err)
-            }
-       if(termsAccepted && (isSHA256(theFormData.key))){
-        console.log("we have the checksum: ", isSHA256(theFormData.key), theFormData)
-        // call server and send the data
         setSpinner(true);
+
         setTimeout(() => {
-          registerNewUser({        
-            countryCode: theFormData.countryCode,
-            dateOfBirth: theFormData.dateOfBirth,
-            email: theFormData.email,
-            firstName: theFormData.firstName,
-            key: theFormData.key,
-            lastName: theFormData.lastName,
-            notifications: theFormData.notifications,
-            password: theFormData.password,
-            phone: theFormData.phone,
-            profileImage: theFormData.profileImage,
-            role: theFormData.role
-          })
-        }, 2000); 
-      }
-      else{
+         // Get the query string which starts with '?' and remove the '?' with slice(1)
+          const queryString = window.location.search.slice(1);
+
+          // Create a URLSearchParams object from the query string
+          const params = new URLSearchParams(queryString);
+
+          // Get the value of the 'token' parameter
+          const token = params.get('token');
+
+          handleRouting('ValidUser', token)
+        }, 2000);
+
+      }else if(termsAccepted){
+
+        setSpinner(true);
+        setTimeout(async() => {
+        const response = await UseHook_SendRequest(theFormData) //'http://localhost:3000/api/signup/create'
+          
+        console.log("the form data: ", theFormData)
+        console.log("response : ", response)
+        console.log("response.status : ", response.status)
+
+        const data = await response.text();
+
+        if(response.status == 200){
+          
+          setCreateUser(false);
+          setAskNewUser(true) // if user doesnt exist
+          setSpinner(false);
+        }else{
+          handleRouting('Fallback')
+        }
+        console.log("new user submitting: ", theFormData)
+      }, 2000); 
+
+      }else{
         alert('Oops! 😅 Doesnt look like you accepted the terms: \n To create an account you must accept the terms')
       }
+    }catch(err){
+      console.log(err)
     }
+  }
     /**
      * Handles the acceptance of terms and conditions.
      *
@@ -193,14 +173,13 @@ export const SignInSection = ({ checksum }) => { // the checksum is passed all t
     >
           <Box className='form'>
             { // this turnery will the user to accept the terms, or try to login.
-            createUser || checksum ? 
+            createUser ? 
             <CreateAccountForm 
               setTermsAccepted={setTermsAccepted} 
               handleAcceptTerms={handleAcceptTerms}
               openModal={setModalOpen} 
               createUser={setCreateUser} 
-              checksum={checksum ? checksum : null}
-            /> : <SignInForm createUser={setCreateUser} parseURL={parseURL} UseHook_SendRequest={UseHook_SendRequest}/> // sign in form
+            /> : <SignInForm createUser={setCreateUser} UseHook_SendRequest={UseHook_SendRequest}/> // sign in form
             }
           </Box>
 
@@ -212,10 +191,10 @@ export const SignInSection = ({ checksum }) => { // the checksum is passed all t
             >
             <Box sx={{
                 position: 'absolute',
-                top: '50%', 
+                top: '50%',
                 left: '50%',
-                transform: 'translate(-50%, -50%)', 
-                width: 400, 
+                transform: 'translate(-50%, -50%)',
+                width: 400,
                 bgcolor: 'background.paper',
                 border: '2px solid #000',
                 boxShadow: 24,
@@ -225,7 +204,7 @@ export const SignInSection = ({ checksum }) => { // the checksum is passed all t
               }}>
                 {/* Conditionally render the buttons depending on if theyve been clicked */}
               <Typography id="modal-modal-title" variant="h6" component="h2">
-               {askNewUser ? 'We didnt find and account for those credentials\nCreate an account?' : 'Terms & Conditions'}
+               {askNewUser ? 'We didnt find and account for those credentials.\n Create an account?' : 'Terms & Conditions'}
               </Typography>
               {
                 spinner ? <CircularProgress /> :

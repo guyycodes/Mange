@@ -37,9 +37,18 @@ public class GeminiController {
             String response = geminiService.chat(chatRequest.getMessage());
             logger.info("Sent chat response: {}", response);
             return ResponseEntity.ok(new ChatResponse(response));
+        } catch (IllegalArgumentException e) {
+            // Check if the error is related to unauthorized citations
+            if (e.getMessage().contains("unauthorized citations")) {
+                logger.error("Unauthorized citations found in response", e);
+                return ResponseEntity.status(403).body(new ChatResponse("The response contained unauthorized citations and could not be delivered."));
+            } else {
+                logger.error("Error while processing chat request", e);
+                return ResponseEntity.status(500).body(new ChatResponse("Error processing request"));
+            }
         } catch (Exception e) {
-            logger.error("Error while processing chat request", e);
-            return ResponseEntity.status(500).body(new ChatResponse("Error processing request"));
+            logger.error("Unexpected error while processing chat request", e);
+            return ResponseEntity.status(500).body(new ChatResponse("Unexpected error occurred while processing request"));
         }
     }
 

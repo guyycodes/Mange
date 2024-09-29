@@ -25,7 +25,7 @@ const Input = styled(TextField)({
   marginBottom: 8,
 });
 
-export const CreateAccountForm = ({setTermsAccepted, handleAcceptTerms, openModal, createUser, checksum }) => {
+export const CreateAccountForm = ({ setTermsAccepted, handleAcceptTerms, openModal, createUser }) => {
 
   const loginFormRef = useRef(null);
   const [formData, setFormData] = useState({
@@ -35,7 +35,7 @@ export const CreateAccountForm = ({setTermsAccepted, handleAcceptTerms, openModa
     phone: '',
     gender:'',
     countryCode: '+1 🇺🇸',
-    role: '',
+    role: 'user',
     password: '',
     confirmPassword: '',
     dateOfBirth: '',
@@ -43,7 +43,7 @@ export const CreateAccountForm = ({setTermsAccepted, handleAcceptTerms, openModa
     profileImage: null,
   });
   const [dateOfBirthError, setDateOfBirthError] = useState(false);
-  const [roleError, setRoleError] = useState(false)
+
   useEffect(() => {
     return () => {
       // Clean up the object URL when the component unmounts
@@ -116,14 +116,11 @@ const handleImageUpload = (event) => {
   }
 };
 
-  const handleSubmit = (event, key = '') => { // validates inputs
+  const handleSubmit = (event) => { // validates inputs
+    console.log(formData)
     event.preventDefault();
     if (!formData.dateOfBirth) {
       setDateOfBirthError(true);
-      return;
-    }
-    if (!checksum && !formData.role) {
-      setRoleError(true);
       return;
     }
     const loginForm = loginFormRef.current;
@@ -131,20 +128,9 @@ const handleImageUpload = (event) => {
     validateNewAccount(formData.email, formData.password, formData.confirmPassword, loginForm)
     .then((result) => {
       if (result === 0) { // form validation function returns 0 if there are no errors
-        if(formData.role === 'volunteer'){
-          console.log('The result is 0');
-          openModal(true)  // the modal is in the parent component & handle the api call after terms accepted
-          handleAcceptTerms(formData)
-        }else if(key !== ''){
-          const updatedFormData = { ...formData, key: key }
-          updatedFormData.role = 'camper'
-          openModal(true)
-          // add the key into the forms data
-          handleAcceptTerms(updatedFormData)
-        }
-      }else{
-        setRoleError(true)
-        return
+        console.log('The result is 0');
+        openModal(true)  // the modal is in the parent component & handle the api call after terms accepted
+        handleAcceptTerms(formData)
       }
     })
     .catch((error) => {
@@ -188,7 +174,7 @@ const handleImageUpload = (event) => {
         }}
       >
         <Typography component="h1" variant="h5">
-          {checksum ? "Setup you new account" : "Create Account"}
+          Create Account
         </Typography>
         <form>
           <Box display="flex" justifyContent="flex-start" mt={2} mb={2}>
@@ -300,23 +286,7 @@ const handleImageUpload = (event) => {
               fullWidth
             />
           </Box>
-          {/* Only show this if there is now checksum, **will only show for unconfirmed account sign up */}
-          {!checksum && <FormControl fullWidth> 
-            <InputLabel id="role-label">Role</InputLabel>
-            <Select
-              labelId="role-label"
-              value={formData.role}
-              label="Role"
-              error={roleError}
-              helpertext={roleError ? "Role is required" : ""}
-              onChange={handleChange}
-              name="role"
-              required='true'
-            >
-              {/* <MenuItem value="camper">Camper</MenuItem> */}
-              <MenuItem value="volunteer">Volunteer</MenuItem>
-            </Select>
-          </FormControl>}
+
           <Input
             fullWidth
             variant="outlined"
@@ -337,10 +307,10 @@ const handleImageUpload = (event) => {
           />
           <FormControlLabel
             control={<Checkbox checked={formData.notifications} onChange={handleChange} name="notifications" />}
-            label={formData.role === 'camper' ? "Receive important notifications about your child at camp?" : "Receive important notifications?"}
+            label="Receive important notifications?"
           />
-          {/* Only show this if there is now checksum, **will only show for unconfirmed account sign up */}
-          { !checksum && <Box mt={2} mb={2}>
+
+          <Box mt={2} mb={2}>
             <Button
               color="secondary"
               type="submit"
@@ -349,27 +319,16 @@ const handleImageUpload = (event) => {
             >
               Go Back
             </Button>
-          </Box> }
-          {
-          formData.role === 'volunteer' ?           
-          <Button onClick={(e) => {
-            // modal is located in the parent component SignInContainer.jsx and is passed as a prop 'openModal
-            handleSubmit(e)
-            setTermsAccepted(false)
-            }} 
-            type="submit" fullWidth variant="contained" color="primary" endIcon={<ChevronRightIcon />}>
-            Submit
-          </Button> 
-          :
+          </Box>
+
           <Button 
           onClick={(e) =>{
             const node = document.querySelector(".messages")
-            handleSubmit(e, checksum)
+            handleSubmit(e)
           }} 
            type="submit" fullWidth variant="contained" color="primary" endIcon={<ChevronRightIcon />}>
             Create Account
           </Button>
-          }
         </form>
       </motion.div>
     </Container>
