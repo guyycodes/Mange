@@ -47,7 +47,7 @@ const router = createBrowserRouter([
     element: <BackgroundWrapper><OAuthCallback /></BackgroundWrapper>
   },
   {
-    path: "*",
+    path: "/*",
     element:  <Error404/>
   }
 ]);

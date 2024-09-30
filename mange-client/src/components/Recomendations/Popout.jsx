@@ -6,13 +6,16 @@ import SendIcon from '@mui/icons-material/Send';
 import ImageIcon from '@mui/icons-material/Image';
 import LockIcon from '@mui/icons-material/Lock';
 import icons from '../../assets/iconRegistry';
+import { SidebarMenu } from './PopoutElements/SidebarMenu';
+import { SpaceBar } from '@mui/icons-material';
 
-export const SlideOut = ({ handleTabSelection, selected }) => {
+
+export const SlideOut = ({ handleTabSelection }) => {
   const [isSidebarOpen, setIsSidebarOpen] = useState(true);
+  const [selected, setSelected] = useState(0);
   const [isAIOn, setIsAIOn] = useState(false);
   const [chatInput, setChatInput] = useState("");
   const [chatMessages, setChatMessages] = useState([]);
-  const [windowWidth, setWindowWidth] = useState(window.innerWidth);
   const chatWindowRef = useRef(null);
   const [hasAIAccess, setHasAIAccess] = useState(false);
 
@@ -39,7 +42,6 @@ export const SlideOut = ({ handleTabSelection, selected }) => {
     const handleResize = () => {
       if (window.innerWidth <= 605) {
         setIsSidebarOpen(false);
-        setWindowWidth(window.innerWidth);
       }
     };
 
@@ -67,7 +69,18 @@ export const SlideOut = ({ handleTabSelection, selected }) => {
     }
   };
 
+  const handleOpenUpgradeModal = () => {
+    // Implement the logic to open the upgrade modal
+    console.log("Open upgrade modal");
+  };
+
+  const handleImageUpload = (event) => {
+    // Implement the logic for image upload
+    console.log("Image uploaded:", event.target.files[0]);
+  };
+
   return (
+    <>
     <Box className="overlap" sx={{
       height: '100vh',
       position: 'relative',
@@ -117,68 +130,13 @@ export const SlideOut = ({ handleTabSelection, selected }) => {
                 transform: 'translateX(-50%)',
                 width: '100px',
                 height: '100px',
-                backgroundImage: `url(${icons.logo})`,
+                backgroundImage: `url(https://imgur.com/0c4bor6.png)`,
                 backgroundSize: 'cover',
                 backgroundPosition: 'center',
                 zIndex: '10'
-              }} />
-              <Box className="menu-name" sx={{ position: 'absolute', top: '234px', width: '169px', zIndex: '10' }}>
-                <Button
-                  onClick={() => handleTabSelection(2)}
-                  sx={{
-                    position: 'absolute',
-                    top: '45px',
-                    transform: 'translateX(10%)',
-                    scale: '1.25',
-                    width: '129px',
-                    padding: 0,
-                    minWidth: 'unset',
-                  }}
-                >
-                  <img alt="My Camper" src={selected === 2 ? icons.myCamperDark : icons.myCamperLight} style={{ width: '100%' }} />
-                </Button>
-                <Button
-                  onClick={() => handleTabSelection(1)}
-                  sx={{
-                    position: 'absolute',
-                    top: 0,
-                    width: '129px',
-                    padding: 0,
-                    minWidth: 'unset',
-                  }}
-                >
-                  <img alt="Forms" src={selected === 1 ? icons.formsDark : icons.formsLight} style={{ width: '100%' }} />
-                </Button>
+              }} >
+                <SidebarMenu handleTabSelection={handleTabSelection} selected={selected} />
               </Box>
-            
-                <Button
-                  onClick={() => handleTabSelection(3)}
-                  sx={{
-                    position: 'absolute',
-                    top: '328px',
-                    width: '107px',
-                    padding: 0,
-                    minWidth: 'unset',
-                    zIndex: '10',
-                  }}
-                >
-                  <img alt="Contact" src={selected === 3 ? icons.contactDark : icons.contactLight} style={{ width: '100%' }} />
-                </Button>
-              
-              <Button
-                onClick={() => handleTabSelection(0)}
-                sx={{
-                  transform: 'translateX(-5%)',
-                  position: 'absolute',
-                  top: '195px',
-                  width: '134px',
-                  padding: 0,
-                  minWidth: 'unset',
-                  zIndex: '10'
-                }}
-              >
-                <img alt="Profile" src={selected === 0 ? icons.profileDark : icons.profileLight} style={{ width: '100%' }} />
-              </Button>
             </>
           )}
         </Box>
@@ -199,10 +157,117 @@ export const SlideOut = ({ handleTabSelection, selected }) => {
             zIndex: 11
           }}
         >
-          {/* AI Assistant toggle and chat window */}
-          {/* ... (AI Assistant code remains the same) */}
+          <Box sx={{ display: 'flex', alignItems: 'center', width: '100%', marginBottom: '10px' }}>
+            {hasAIAccess ? (
+              <>
+                <Switch
+                  checked={isAIOn}
+                  onChange={toggleAI}
+                  color="primary"
+                  className="ai-toggle"
+                />
+                <Typography variant="subtitle2" sx={{ color: 'white', flex: 1, marginLeft: '10px' }}>
+                  AI Assistant
+                </Typography>
+              </>
+            ) : (
+              <>
+                <LockIcon 
+                  sx={{ color: 'white', marginRight: '10px', cursor: 'pointer' }} 
+                  onClick={handleOpenUpgradeModal}
+                />
+                <Typography variant="subtitle2" sx={{ color: 'white', flex: 1 }}>
+                  Upgrade to Unlock
+                </Typography>
+                <Button
+                  variant="outlined"
+                  size="small"
+                  onClick={handleOpenUpgradeModal}
+                  sx={{
+                    color: 'white',
+                    borderColor: 'white',
+                    '&:hover': {
+                      backgroundColor: 'rgba(255, 255, 255, 0.1)',
+                      borderColor: 'white',
+                    },
+                  }}
+                >
+                  Unlock
+                </Button>
+              </>
+            )}
+          </Box>
+          
+          <motion.div
+            ref={chatWindowRef}
+            initial={{ height: 0, width: '100%' }}
+            animate={{ 
+              height: isAIOn ? 'auto' : 0,
+              width: isAIOn ? '100vw' : '100%',
+              maxWidth: '400px',
+            }}
+            transition={{ duration: 0.3 }}
+            style={{ 
+              overflow: 'hidden',
+              position: 'absolute',
+              left: 0,
+              bottom: '100%',
+              backgroundColor: 'rgba(20, 121, 204, 0.9)',
+              borderRadius: '8px 8px 0 0',
+              boxShadow: '0px -2px 10px rgba(0, 0, 0, 0.1)'
+            }}
+          >
+            <Box sx={{ 
+              height: '360px',
+              overflowY: 'auto', 
+              marginBottom: '10px', 
+              backgroundColor: 'rgba(255, 255, 255, 0.05)', 
+              borderRadius: '4px', 
+              padding: '10px',
+              margin: '10px'
+            }}>
+              {chatMessages.map((msg, index) => (
+                <Typography key={index} variant="body2" sx={{ color: msg.type === 'user' ? 'white' : '#90caf9', marginBottom: '5px' }}>
+                  {msg.type === 'user' ? 'You: ' : 'AI: '}{msg.content}
+                </Typography>
+              ))}
+            </Box>
+            <Box sx={{ display: 'flex', alignItems: 'center', padding: '0 10px 10px 10px' }}>
+              <TextField
+                value={chatInput}
+                onChange={(e) => setChatInput(e.target.value)}
+                variant="outlined"
+                size="small"
+                sx={{ 
+                  flex: 1, 
+                  backgroundColor: 'rgba(255, 255, 255, 0.1)', 
+                  input: { color: 'white' },
+                  '& .MuiOutlinedInput-root': {
+                    '& fieldset': {
+                      borderColor: 'rgba(255, 255, 255, 0.3)',
+                    },
+                    '&:hover fieldset': {
+                      borderColor: 'rgba(255, 255, 255, 0.5)',
+                    },
+                    '&.Mui-focused fieldset': {
+                      borderColor: 'white',
+                    },
+                  },
+                }}
+                placeholder="Type a message..."
+              />
+              <IconButton onClick={handleChatSubmit} sx={{ color: 'white', marginLeft: '5px' }}>
+                <SendIcon />
+              </IconButton>
+              <IconButton component="label" sx={{ color: 'white' }}>
+                <input type="file" hidden accept="image/*" onChange={handleImageUpload} />
+                <ImageIcon />
+              </IconButton>
+            </Box>
+          </motion.div>
         </Box>
       )}
     </Box>
+    </>
   );
 };

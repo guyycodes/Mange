@@ -11,7 +11,7 @@ import jakarta.validation.constraints.Size;
  */
 public class ChatRequest {
     @NotBlank(message = "Message cannot be empty")
-    @Size(max = 1000, message = "Message cannot exceed 1000 characters")
+    @Size(max = 2000, message = "Message cannot exceed 2000 characters")
     private String message;
 
     // Getter and setter

@@ -25,13 +25,12 @@ export const USE_CUSTOM_GET_HOOK = (url) => {
     const startTime = Date.now();
     
     try {
-      const result = await axios.get(url, { params });
-      if (result.status >= 200 && result.status < 300) {
+        const result = await axios.get(url, { params });
+      
         setResponse(result.data);
         return result.data; // Return the response data
-      } else {
-        throw new Error(`HTTP error! status: ${result.status}`);
-      }
+     
+      
     } catch (err) {
       // Capture the error message from the server response
       if (err.response) {

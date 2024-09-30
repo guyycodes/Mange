@@ -8,6 +8,7 @@ import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
 import com.mange.mange.service.GoogleAuthService;
+import com.mange.mange.service.UserService;
 import com.mange.mange.dto.UserDTO;
 
 import jakarta.servlet.http.Cookie;
@@ -24,6 +25,9 @@ public class GoogleAuthController {
 
     @Autowired
     private GoogleAuthService googleAuthService;
+
+    @Autowired
+    private UserService userService;
 
     @Value("${frontend.url}")
     private String frontendUrl;
@@ -44,10 +48,19 @@ public class GoogleAuthController {
 
             if (user.isEmailVerified()) {
                 if (googleAuthService.isUserRegistered(user.getEmail())) {
-                    addCookie(response, "user_token", idToken, 30 * 60); // 30 minutes
-                    logger.info("User authenticated successfully");
-                    String redirectUrl = frontendUrl + "/oauth/callback?token=" + idToken;
-                    return ResponseEntity.status(302).header("Location", redirectUrl).build();
+                    // check user again our database
+                    boolean isValidatedUser = userService.isValidatedUser(user.getEmail());
+                    if(isValidatedUser){
+                        addCookie(response, "user_token", idToken, 30 * 60); // 30 minutes
+                        logger.info("User authenticated successfully");
+                        String redirectUrl = frontendUrl + "/oauth/callback?token=" + idToken;
+                        return ResponseEntity.status(302).header("Location", redirectUrl).build();
+                    }else{
+                        addCookie(response, "Not_Validated", "true", 30);
+                        logger.info("User not Validated");
+                        // Redirect to error controller for unvalidated user
+                        return ResponseEntity.status(302).header("Location", frontendUrl + "/api/error/unvalidated").build();
+                    }
                 } else {
                     addCookie(response, "No_User", "true", 30);
                     logger.info("User not registered");
@@ -56,11 +69,11 @@ public class GoogleAuthController {
             } else {
                 addCookie(response, "No_Verified_Gmail", "true", 3);
                 logger.warn("Email not verified for user: {}", user.getEmail());
-                return ResponseEntity.status(302).header("Location", frontendUrl + "/error?reason=emailNotVerified").build();
+                return ResponseEntity.status(302).header("Location", frontendUrl + "/api/error/unvalidated").build();
             }
         } catch (IOException | GeneralSecurityException e) {
             logger.error("Authentication failed", e);
-            return ResponseEntity.status(302).header("Location", frontendUrl + "/error?reason=authenticationFailed").build();
+            return ResponseEntity.status(302).header("Location", frontendUrl + "/api/error/unvalidated").build();
         }
     }
 
