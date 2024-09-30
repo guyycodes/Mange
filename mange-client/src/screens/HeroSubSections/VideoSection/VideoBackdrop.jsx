@@ -1,28 +1,22 @@
 import React, { useRef, useEffect } from "react";
 import { Button, Typography, Box, useTheme, useMediaQuery } from "@mui/material";
-import { useRouteContext } from "../../../util/context/routeContext";
-import {
-  REGISTRATION,
-  LEARN
-} from '../../../util/actions/actions';
+import { useNavigate } from 'react-router-dom';
 
 export const TitleTextsButton = () => {
   const theme = useTheme();
   const videoRef = useRef(null);
+  const navigate = useNavigate();
   // const isMobile = useMediaQuery(theme.breakpoints.down('sm'));
   // const isTablet = useMediaQuery(theme.breakpoints.between('sm', 'md'));
-  const { dispatch } = useRouteContext();
-
-    /**
-   * Handles routing based on the clicked link.
-   *
-   * @function
-   * @param {string} clickedText - The text of the clicked link
-   */
-    const handleRouting = (clickedText) => {
-      dispatch({ type: REGISTRATION, payload: clickedText === 'Registration' ? 1 : 0 });
-      dispatch({ type: LEARN, payload: clickedText === 'Learn' ? 1 : 0 });
-    };
+  const scrollNow = (location) =>{
+    // Scroll now
+    (() => {
+      window.scrollTo({
+        top: location,
+        behavior: 'smooth',
+      });
+    })();
+  }
 
   useEffect(() => {
     if (videoRef.current) {
@@ -152,13 +146,13 @@ export const TitleTextsButton = () => {
                   bgcolor: 'purple',
                 },
               }}
-              onClick={() => handleRouting('Learn')}
+              onClick={() => scrollNow(600)}
             >
               Learn More
             </Button>
             <Button 
               variant="outlined" 
-              onClick={() => handleRouting('Registration')}
+              onClick={() => navigate('/login')}
               sx={{ 
                 borderColor: 'var(--white)', 
                 color: 'var(--white)',

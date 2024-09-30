@@ -15,12 +15,11 @@ import { validate } from '../../../util/validate/validateLogin'
 import { useRouteContext } from '../../../util/context/routeContext';
 import { VALID_USER, JWT } from "../../../util/actions/actions";
 import { buildJwtDto } from "../../../util/DataIntegrity/buildJWT_DTO";
-
+import { useNavigate } from 'react-router-dom';
 
 export const SignInForm = ({ createUser, UseHook_LoginRequest, validationSequence, setContext }) => {
 
   const loginFormRef = useRef(null);
-  const { dispatch } = useRouteContext();
   const routeContext = useRouteContext();
   let { jwt } = routeContext; // Extract jwt from routeContext
   const storedRememberMe = localStorage.getItem("MangeRememberMe") === "true";
@@ -32,6 +31,7 @@ export const SignInForm = ({ createUser, UseHook_LoginRequest, validationSequenc
   const [password, setPassword] = useState(storedPassword);
   const [email, setEmail] = useState(storedEmail);
   const [spinner, setSpinner] = useState(false)
+  const navigate = useNavigate();
 
   useEffect(() => {
     // make a function to calle the backend and get the credentials
@@ -82,6 +82,7 @@ export const SignInForm = ({ createUser, UseHook_LoginRequest, validationSequenc
               console.log('jwt', jwt);
  
               setContext('jwt', jwt);
+              navigate('/mange/authenticated')
             }else{
               console.log('Login failed');
             }
@@ -90,7 +91,6 @@ export const SignInForm = ({ createUser, UseHook_LoginRequest, validationSequenc
             // Handle login failure
           } finally {
             setSpinner(false);
-            setContext('validUser');
           }
         } else {
           console.error("Form validation failed");
@@ -119,7 +119,7 @@ export const SignInForm = ({ createUser, UseHook_LoginRequest, validationSequenc
   async function fetchGoogleAuth() {
     try {
         // Make an HTTP GET request to the Google auth endpoint
-        const response = await fetch('http://localhost:3000/api/auth/google');
+        const response = await fetch('http://localhost:8080/api/auth/google');
         // Check if the fetch was successful
         if (!response.ok) {
             throw new Error(`HTTP error! Status: ${response.status}`);
@@ -135,6 +135,7 @@ export const SignInForm = ({ createUser, UseHook_LoginRequest, validationSequenc
     try{
       await fetchGoogleAuth()
       .then((data) => {
+        // send the user to googles url
         window.location.href = data;
       })
       .catch((error) => {

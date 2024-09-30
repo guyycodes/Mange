@@ -184,6 +184,10 @@ public class User {
         return valid;
     }
 
+    public boolean getValid() {
+        return valid;
+    }
+
     public void setValid(boolean valid) {
         this.valid = valid;
     }

@@ -1,12 +1,7 @@
 import MenuIcon from '@mui/icons-material/Menu';
 import { AppBar, Button, CssBaseline, IconButton, Menu, MenuItem, Toolbar, Typography, useMediaQuery, useTheme } from '@mui/material';
 import React, { useEffect, useState } from 'react';
-import { useRouteContext } from "../../../util/context/routeContext";
-import {
-  HOME,
-  REGISTRATION,
-  LEARN
-} from '../../../util/actions/actions';
+import { useNavigate } from 'react-router-dom';
 
 // TypewriterEffect component for animating text
 const TypewriterEffect = ({ text }) => {
@@ -64,7 +59,17 @@ export const Navigation = () => {
   const [anchorEl, setAnchorEl] = useState(null);
   const theme = useTheme();
   const isMobile = useMediaQuery(theme.breakpoints.down('sm'));
-  const { dispatch } = useRouteContext();
+  const navigate = useNavigate();
+
+  const scrollNow = (location) =>{
+    // Scroll now
+    (() => {
+      window.scrollTo({
+        top: location,
+        behavior: 'smooth',
+      });
+    })();
+  }
 
     /**
    * Handles routing based on the clicked link.
@@ -72,10 +77,9 @@ export const Navigation = () => {
    * @function
    * @param {string} clickedText - The text of the clicked link
    */
-    const handleRouting = (clickedText) => {
-      dispatch({ type: REGISTRATION, payload: clickedText === 'Registration' ? 1 : 0 });
-      dispatch({ type: LEARN, payload: clickedText === 'Learn' ? 1 : 0 });
-      dispatch({ type: HOME, payload: clickedText === 'Home' ? 1 : 0 });
+    const handleRouting = (route) => {
+      navigate(route);
+      handleClose(); // Close the menu if open
     };
 
    // Handler for opening the mobile menu
@@ -182,28 +186,28 @@ export const Navigation = () => {
                 open={Boolean(anchorEl)}
                 onClose={handleClose}
               >
-                <MenuItem onClick={() => handleRouting('Home')}>Home</MenuItem>
-                <MenuItem onClick={() => handleRouting('Registration')}>Join</MenuItem>
-                <MenuItem onClick={() => handleRouting('Learn')}>Learn</MenuItem>
+                <MenuItem onClick={() => handleRouting('/')}>Home</MenuItem>
+                <MenuItem onClick={() => handleRouting('/login')}>Join</MenuItem>
+                <MenuItem onClick={() => scrollNow(600)}>Learn</MenuItem>
               </Menu>
             </>
           ) : (
             <div style={{ display: 'flex', alignItems: 'center' }}>
               <Button
-                onClick={() => handleRouting('Home')}
+                onClick={() => handleRouting('/')}
                 color="inherit" 
                 sx={embossedText}
               >Home
               </Button>
               <Button 
                 color="inherit" 
-                onClick={() => handleRouting('Registration')}
+                onClick={() => handleRouting('/login')}
                 sx={embossedText}
               >Join
               </Button>
               <Button 
                 variant="contained" 
-                onClick={() => handleRouting('Learn')}
+                onClick={() => scrollNow(600)}
                 sx={{
                   color: '#1e1e1e',
                   borderRadius: '5px',

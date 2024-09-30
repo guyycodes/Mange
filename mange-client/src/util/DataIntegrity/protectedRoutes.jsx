@@ -1,9 +1,7 @@
 import { jwtDecode } from 'jwt-decode';
 import { USE_CUSTOM_GET_HOOK } from "../reactHooks/GET_HOOK";
 import React, {useState, useEffect} from "react";
-import {
-    HOME,
-  } from '../actions/actions';
+
   import { useRouteContext } from '../context/routeContext';
 
 /**
@@ -19,17 +17,7 @@ import {
 export const ProtectedRoutes = ({ component: Component, endpoint, checkAuth = false }) => {
     const { fetchData, loading, error, response } = USE_CUSTOM_GET_HOOK(endpoint);
     const [isAuthenticated, setIsAuthenticated] = useState(null);
-    const { dispatch } = useRouteContext();
     const routeContext = useRouteContext();
-
-    /**
-     * Handles routing based on the clicked link.
-     * @param {string} clickedText - The text of the clicked link
-     */
-    const handleRouting = (clickedText) => {
-    
-        dispatch({ type: HOME, payload: clickedText === 'Home' ? 1 : 0 });
-    };
 
     /**
      * Retrieves the JWT from the context.
@@ -64,21 +52,11 @@ export const ProtectedRoutes = ({ component: Component, endpoint, checkAuth = fa
         if (decodedToken.exp < (Date.now() / 1000)) return false;
 
         if (data === 'skip') {
-            const isValid = decodedToken.exp > (Date.now() / 1000);
-            if (isValid) {
-                localStorage.setItem('jwt', token);
-                localStorage.setItem('isAuthenticated', 'true');
-            }
-            return isValid;
+            return decodedToken.exp > (Date.now() / 1000);
         }
 
         if (data && decodedToken) {
-            const isValid = (decodedToken.data.id === data.me.id) && (decodedToken.data.email === data.me.email);
-            if (isValid) {
-                localStorage.setItem('jwt', token);
-                localStorage.setItem('isAuthenticated', 'true');
-            }
-            return isValid;
+            return (decodedToken.data.id === data.me.id) && (decodedToken.data.email === data.me.email);
         }
 
         if (error) {
@@ -117,7 +95,7 @@ export const ProtectedRoutes = ({ component: Component, endpoint, checkAuth = fa
     if (isAuthenticated) {
         return <Component />;
     } else {
-        handleRouting('Home');
+       
         return null;
     }
 }

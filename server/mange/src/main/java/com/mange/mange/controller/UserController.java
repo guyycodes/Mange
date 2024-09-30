@@ -130,8 +130,8 @@ public class UserController {
         } else {
             // attempt to authenticate with email and password
             boolean isAuthenticated = userService.authenticateUser(jwtDto.getEmail(), jwtDto.getPassword());
-
-            if (isAuthenticated) {
+            boolean isValidated = userService.isValidatedUser(jwtDto.getEmail());
+            if (isValidated && isAuthenticated) {
                 jwtDto.setValid(true);
                 String token = jwtUtil.generateToken(jwtDto);
                 return ResponseEntity.status(200).body(token);

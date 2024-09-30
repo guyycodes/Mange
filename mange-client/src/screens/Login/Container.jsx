@@ -48,16 +48,14 @@ export const SignInSection = ({ authFailure, validationSequence }) => { // the c
     const [conflict, setConflict] = useState(false)
 
       /**
-   * Handles routing based on the clicked link.
+   * Handles rsetting the JWT to context
    *
    * @function
-   * @param {string} clickedText - The text of the clicked link
+   * @param {string}
    */
       const setContext = (result, data) => {
         if (result === 'jwt') {
           dispatch({ type: JWT, payload: data });
-        } else if (result === 'validUser') {
-          dispatch({ type: VALID_USER, payload: 1 });
         }
       };
 

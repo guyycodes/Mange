@@ -84,6 +84,19 @@ public class UserService {
         return false;
     }
 
+    public boolean isValidatedUser(String email){
+        try{
+            User user = getUserByEmail(email);
+            if (user.getValid()) {
+                return true;
+            }
+        } catch (RuntimeException e) {
+            // User not found
+            return false;
+        }
+        return false;
+    }
+
     public boolean authenticateUser(String email, String password) {
         try {
             User user = getUserByEmail(email);

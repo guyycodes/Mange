@@ -15,12 +15,7 @@ import {
 } from '@mui/material';
 import React from 'react';
 import { FaXTwitter } from "react-icons/fa6";
-import {
-  HOME,
-  REGISTRATION,
-  LEARN
-} from '../../util/actions/actions';
-import { useRouteContext } from '../../util/context/routeContext';
+import { useNavigate } from 'react-router-dom';
 
 /**
  * FooterSection component for the application.
@@ -30,32 +25,19 @@ import { useRouteContext } from '../../util/context/routeContext';
  * @returns {JSX.Element} The rendered FooterSection component
  */
 export const FooterSection = () => {
-  const { dispatch } = useRouteContext();
-
+  const navigate = useNavigate();
     /**
    * Scrolls the window to the top smoothly.
    *
    * @function
    * @param {React.MouseEvent<HTMLButtonElement>} e - The click event
    */
-  const scrollToTop = (e) => {
+  const scrollTo = (e, v) => {
     e.preventDefault();
     window.scrollTo({
-      top: 0,
+      top: v,
       behavior: 'smooth',
     });
-  };
-
-    /**
-   * Handles routing based on the clicked link.
-   *
-   * @function
-   * @param {string} clickedText - The text of the clicked link
-   */
-  const handleRouting = (clickedText) => {
-    dispatch({ type: REGISTRATION, payload: clickedText === 'Registration' ? 1 : 0 });
-    dispatch({ type: LEARN, payload: clickedText === 'Learn' ? 1 : 0 });
-    dispatch({ type: HOME, payload: clickedText === 'Home' ? 1 : 0 });
   };
 
   return (
@@ -87,9 +69,9 @@ export const FooterSection = () => {
               Quick Links
             </Typography>
             <Stack direction="column" spacing={1} alignItems="center">
-              <Button color="inherit" onClick={() => handleRouting('Home')}>Home</Button>
-              <Button color="inherit" onClick={() => handleRouting('Registration')}>Login/Register</Button>
-              <Button color="inherit" onClick={() => handleRouting('Learn')}>Learn More</Button>
+              <Button color="inherit" onClick={(e) => scrollTo(e, 0)}>Home</Button>
+              <Button color="inherit" onClick={() => navigate('/login')}>Login/Register</Button>
+              <Button color="inherit" onClick={(e) => scrollTo(e, 600)}>Learn More</Button>
             </Stack>
           </Grid>
           
@@ -118,7 +100,7 @@ export const FooterSection = () => {
             variant="outlined"
             color="inherit"
             startIcon={<ArrowUpward />}
-            onClick={scrollToTop}
+            onClick={(e)=>{scrollTo(e,0)}}
           >
             Back to Top
           </Button>
