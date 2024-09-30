@@ -27,6 +27,7 @@
     "gh-pages": "^6.1.1",
     "idb": "^8.0.0",
     "jwt-decode": "^4.0.0",
+    "jwt-encode": "^1.0.1",
     "lucide-react": "^0.427.0",
     "pica": "^9.0.1",
     "prop-types": "^15.8.1",

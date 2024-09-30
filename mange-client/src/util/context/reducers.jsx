@@ -11,29 +11,17 @@ import {
 
 export const reducer = (state, action) => {
     switch (action.type){
-        case (HOME) : {
-            return {...state, home: action.payload}
-        }
-        case (REGISTRATION) : {
-            return {...state, registration: action.payload}
-        }
-        case (LEARN) : {
-            return {...state, learn: action.payload}
-        }
-        case (VALID_USER) : {
-            return {...state, validUser: action.payload}
-        }
-        case (INVALID_USER) : {
-            return {...state, invalidUser: action.payload}
-        }
-        case (JWT) : {
-            return {...state, jwt: action.payload}
-        }
-        case (VERIFY_LOGIN) : {
-            return {...state, verifyLogin: action.payload}
-        }
-        case (FALLBACK) : {
-            return {...state, fallback: action.payload}
-        }
+        case HOME:
+        case REGISTRATION:
+        case LEARN:
+        case VALID_USER:
+        case INVALID_USER:
+        case VERIFY_LOGIN:
+        case FALLBACK:
+            return {...state, [action.type.toLowerCase()]: action.payload};
+        case JWT:
+            return {...state, jwt: action.payload};
+        default:
+            return state;
     }
 }

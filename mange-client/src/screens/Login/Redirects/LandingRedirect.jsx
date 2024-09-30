@@ -1,10 +1,10 @@
 import { Alert, Box, Container, Fade, LinearProgress, Paper, Typography } from '@mui/material';
 import React, { useEffect, useState } from 'react';
 import icons from '../../../assets/iconRegistry';
+import { ProfileContainer } from '../../../components/Recomendations/index'
 import { JWT } from '../../../util/actions/actions';
 import { useRouteContext } from '../../../util/context/routeContext';
 import { ProtectedRoutes } from '../../../util/DataIntegrity/protectedRoutes';
-import { SignInSection } from '../Login';
 // This component wraps the login sequence for validating a new user from their email sign up alert
 /**
  * Array of facts about diabetes and STJDA to display during token validation.
@@ -27,7 +27,7 @@ const facts = [
  * @component
  * @returns {React.ReactElement} The rendered ValidateToken component
  */
-export const ValidateToken = () => {
+export const Redirection = () => {
 
   /**
    * Handles routing based on the clicked link.
@@ -41,16 +41,6 @@ export const ValidateToken = () => {
   const [backgroundOpacity, setBackgroundOpacity] = useState(1);
 
   useEffect(() => {
-    const urlParams = new URLSearchParams(window.location.search);
-    const tokenFromUrl = urlParams.get('token');
-
-    if (tokenFromUrl) {
-      dispatch({ type: JWT, payload: tokenFromUrl });
-    } else {
-      setError('No token found in URL');
-      setLoading(false);
-      return;
-    }
 
     /**
      * Interval to rotate through facts during loading.
@@ -101,6 +91,11 @@ export const ValidateToken = () => {
             return newOpacity;
           });
         }, 50);
+
+              // Update the URL without reloading the page
+      const newUrl = '/mange/authenticated?value=1';
+      window.history.pushState({ path: newUrl }, '', newUrl);
+
       } catch (error) {
         console.error('Validation failed:', error);
         setError('Validation failed.');
@@ -210,7 +205,7 @@ export const ValidateToken = () => {
             </Fade>
             <Fade in={!loading } timeout={750}>
               <Box sx={{ display: !loading ? 'block' : 'none' }}>
-                <ProtectedRoutes component={<SignInSection/>} endpoint={null} checkAuth={false} />
+                <ProtectedRoutes component={ProfileContainer} endpoint={null} checkAuth={false} />
               </Box>
             </Fade>
             {error && (

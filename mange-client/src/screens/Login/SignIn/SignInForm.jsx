@@ -1,5 +1,6 @@
 import React, {useState, useEffect, useRef} from "react";
 import styled from "styled-components";
+import jwt_encode from 'jwt-encode';
 import {
     TextField,
     Button,
@@ -12,12 +13,16 @@ import {
   } from "@mui/material";
 import { validate } from '../../../util/validate/validateLogin'
 import { useRouteContext } from '../../../util/context/routeContext';
-import { VALID_USER } from "../../../util/actions/actions";
+import { VALID_USER, JWT } from "../../../util/actions/actions";
+import { buildJwtDto } from "../../../util/DataIntegrity/buildJWT_DTO";
 
-export const SignInForm = ({ createUser, UseHook_SendRequest }) => {
+
+export const SignInForm = ({ createUser, UseHook_LoginRequest, validationSequence, setContext }) => {
 
   const loginFormRef = useRef(null);
   const { dispatch } = useRouteContext();
+  const routeContext = useRouteContext();
+  let { jwt } = routeContext; // Extract jwt from routeContext
   const storedRememberMe = localStorage.getItem("MangeRememberMe") === "true";
   const storedEmail = storedRememberMe ? localStorage.getItem("MangeEmail") : "";
   const storedPassword = storedRememberMe ? localStorage.getItem("MangePassword") : "";
@@ -44,58 +49,58 @@ export const SignInForm = ({ createUser, UseHook_SendRequest }) => {
   }, [rememberMe, email, password]);
 
 
-      /**
-   * Handles routing based on the clicked link.
-   *
-   * @function
-   * @param {string} clickedText - The text of the clicked link
-   */
-    const handleRouting = (clickedText) => {
-      dispatch({ type: VALID_USER, payload: clickedText === 'validUser' ? 1 : 0 });
-    };
-
-  const handleSubmit = (event, em, pass) => {
+  const handleSubmit = async (event, em, pass) => {
+    let result = 1;
+    let jwtDto = null;
     event.preventDefault();
     const loginForm = loginFormRef.current;
+    console.log('jwt ',jwt);
 
-    validate(em, pass, loginForm)
-    .then(async (result) => {
-     if (result === 0) { // form validation function returns 0 if there are no errors
-      const data = {
-        email: em,
-        password: pass
+    if(jwt){
+      const authEmail = jwt.email;
+      result = await validate(em, pass, loginForm, authEmail);
+      jwtDto = buildJwtDto(em, pass, jwt);
+    }else{
+      result = await validate(em, pass, loginForm, em);
+      jwtDto = buildJwtDto(em, pass);
+    }
+
+      try {
+        if (result === 0) { // form validation function returns 0 if there are no errors
+          console.log('JWT DTO:', jwtDto);
+          setSpinner(true);
+        
+          try {
+            const response = await UseHook_LoginRequest(jwtDto);
+            console.log('Login response:', response);
+            
+            // 1 second delay
+            await new Promise(resolve => setTimeout(resolve, 2000));
+            if(response?.status === 200){
+              console.log('Login successful!');
+              const jwt = response.data
+              console.log('jwt', jwt);
+ 
+              setContext('jwt', jwt);
+            }else{
+              console.log('Login failed');
+            }
+          } catch (error) {
+            console.error('Login request failed:', error);
+            // Handle login failure
+          } finally {
+            setSpinner(false);
+            setContext('validUser');
+          }
+        } else {
+          console.error("Form validation failed");
+          // Handle validation failure
+        }
+      } catch (error) {
+        console.error("An error occurred during form submission:", error);
+        // Handle any unexpected errors
       }
-      await UseHook_SendRequest(data)  //call the api in the parent
-      .then((path) => {
-        setSpinner(true)
-        //set timeout for 1 second
-        setTimeout(() => {
-          setSpinner(false);
-
-          // Get the query string which starts with '?' and remove the '?' with slice(1)
-          const queryString = window.location.search.slice(1);
-
-          // Create a URLSearchParams object from the query string
-          const params = new URLSearchParams(queryString);
-
-          // Get the value of the 'token' parameter
-          const token = params.get('token');
-
-          handleRouting('ValidUser', token)
-          
-      }, 2250);
-      })
-      .catch((error) => {
-        console.error('Failed to fetch credentials:', error);
-      })
-
-      }else{
-        // error
-        console.error("Error redirecting")
-        return
-      }
-    })
-  }
+  };
 
   const handleRememberMe = (event) => {
     setRememberMe(event.target.checked);
@@ -139,20 +144,22 @@ export const SignInForm = ({ createUser, UseHook_SendRequest }) => {
       console.log("Error")
     }
   }
+  
     return (
       <StyledFrame>
-        <div className="sign-in-forms-wrapper">
-          <div className="sign-in-forms">
-            <div className="sign-in-form-web">
-              <div className="div">
+        <Box className="sign-in-forms-wrapper">
+          <Box className="sign-in-forms">
+            <Box className="sign-in-form-web">
+              
+              <Box className="div">
                 <Typography variant="h4" className="element" >
-                  Welcome!
-                   {spinner &&<CircularProgress sx={{
+                {!validationSequence ? 'Welcome!' : 'Please Sign in to validate your account'}
+                   {spinner && <CircularProgress sx={{
                     marginLeft: '3rem' 
                   }}/>}
                 </Typography>
-                <div className="div-2">
-                  <div className="div-3">
+                <Box className="div-2">
+                  <Box className="div-3">
                     <TextField
                       ref={loginFormRef}
                       label="Email"
@@ -160,7 +167,7 @@ export const SignInForm = ({ createUser, UseHook_SendRequest }) => {
                       fullWidth
                       margin="normal"
                       value={email}
-                      onChange={handleEmail} // Corrected to use handleEmail
+                      onChange={handleEmail} // use handleEmail
                       error={emailError} 
                       />
                     <TextField
@@ -170,23 +177,27 @@ export const SignInForm = ({ createUser, UseHook_SendRequest }) => {
                       fullWidth
                       margin="normal"
                       value={password}
-                      onChange={handlePassword} // Corrected to use handlePass
+                      onChange={handlePassword} // use handlePass
                       error={passwordError} 
                       />
-                  </div>
-                  <div className="div-5">
+                  </Box>
+                  <Box className="div-5">
                     <FormControlLabel
                       control={<Checkbox />}
                       label="Remember me"
                       className="switcher-item-left"
                       onChange={handleRememberMe}
                     />
-                    <Link href="#" className="description-2">
+                  {
+                  !validationSequence ? <Link href="#" className="description-2">
                       Forgot password?
-                    </Link>
-                  </div>
-                </div>
-              </div>
+                    </Link> : null 
+                  }
+
+                  </Box> 
+                  
+                </Box>
+              </Box>
               <Button onClick={(e) => {
                 let em;
                 let pass
@@ -204,8 +215,10 @@ export const SignInForm = ({ createUser, UseHook_SendRequest }) => {
                 variant="contained" fullWidth className="primary-button">
                 Sign In
               </Button>
-              <div className="nav" />
-              <div className="div-6">
+              <Box className="nav" />
+
+              {
+              !validationSequence ? <Box className="div-6">
                 <Button
                   variant="contained"
                   fullWidth
@@ -221,9 +234,13 @@ export const SignInForm = ({ createUser, UseHook_SendRequest }) => {
                 >
                   Or sign in with Google
                 </Button>
-              </div>
-            </div>
-            <div className="sign-up-offer">
+              </Box> : null
+              }
+
+            </Box>
+
+            {
+            !validationSequence ? <Box className="sign-up-offer">
               <Typography className="description-3">
                 Don't have an account?
               </Typography>
@@ -232,16 +249,18 @@ export const SignInForm = ({ createUser, UseHook_SendRequest }) => {
               onClick={() => {createUser(true)}}>
                 Sign up now
               </Button>
-            </div>
-            <a  href="https://www.guymorganb.com">
+            </Box> : null
+            }
+
+            <a  href="/">
             <img
               className="screenshot"
               alt="Arrow up Logo"
               src="https://imgur.com/0c4bor6.png"
             />
             </a>
-          </div>
-        </div>
+          </Box>
+        </Box>
         <Box className="bottom-panel">
           <Typography className="head"></Typography>
         </Box>
@@ -544,3 +563,4 @@ export const SignInForm = ({ createUser, UseHook_SendRequest }) => {
     width: fit-content;
   }
 `;
+

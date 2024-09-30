@@ -1,0 +1,1 @@
+export { Redirection } from './LandingRedirect'

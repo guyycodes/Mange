@@ -35,21 +35,21 @@ const clearErrors = function(){
     msgs = [];
 }
 
-let validate = async function (em, p, loginForm, customError = '')  {
+let validate = async function (em, p, loginForm, jwtEmail)  {
     let email = em;
     let password = p;
     const emailPattern = /\b[A-Za-z0-9._%+-]+@[A-Za-z0-9.-]+\.[A-Za-z]{2,4}\b/;
     const passwordPattern = /^(?=.*[a-z])(?=.*[A-Z])(?=.*\d)(?=.*[@$!%*?&])[A-Za-z\d@$!%*?&]{8,}$/;
     let pathname;
     
-    if(customError !== ''){
-        msgs[msgs.length] = customError;
-    }
-    else if (!emailPattern.test(email)) {
+    if (!emailPattern.test(email)) {
         msgs[msgs.length] = "Please enter a valid email address.";
     } 
     else if (!passwordPattern.test(password)) {
         msgs[msgs.length] = "Password must contain at least 8 characters, including one uppercase letter, one lowercase letter, one digit, and one special character.";
+    }
+    else if (jwtEmail !== email) {
+        msgs[msgs.length] = "Username or Password is incorrect";
     }
     if (msgs.length == 0) {
         // returns a Promise

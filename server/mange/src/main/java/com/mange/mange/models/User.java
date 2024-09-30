@@ -1,9 +1,11 @@
 package com.mange.mange.models;
 
 import java.util.Date;
+import java.util.Optional;
 
 import org.springframework.security.crypto.bcrypt.BCryptPasswordEncoder;
-
+import com.mange.mange.repository.UserRepository;
+import jakarta.persistence.*;
 import jakarta.persistence.Column;
 import jakarta.persistence.Entity;
 import jakarta.persistence.GeneratedValue;
@@ -16,6 +18,8 @@ import jakarta.persistence.TemporalType;
 @Entity
 @Table(name = "users")
 public class User {
+
+    private static final BCryptPasswordEncoder passwordEncoder = new BCryptPasswordEncoder();
 
     @Id
     @GeneratedValue(strategy = GenerationType.IDENTITY)
@@ -47,10 +51,13 @@ public class User {
     private Date dateOfBirth;
 
     @Column
-    private boolean notifications;
+    private Boolean notifications;
 
     @Column
     private String role;
+
+    @Column
+    private Boolean valid;
 
     @Column(columnDefinition = "TEXT")
     private String profileImage;
@@ -104,8 +111,17 @@ public class User {
     }
 
     public void setPassword(String password) {
-        BCryptPasswordEncoder passwordEncoder = new BCryptPasswordEncoder();
         this.password = passwordEncoder.encode(password);
+    }
+
+    public boolean checkPassword(String loginPassword) {
+        return passwordEncoder.matches(loginPassword, this.password);
+    }
+
+    // Static method to find a user by email and check password
+    public static boolean checkPassword(String loginPassword, String email, UserRepository userRepository) {
+        Optional<User> userOptional = userRepository.findByEmail(email);
+        return userOptional.map(user -> user.checkPassword(loginPassword)).orElse(false);
     }
 
     public String getPhone() {
@@ -162,5 +178,13 @@ public class User {
 
     public void setProfileImage(String profileImage) {
         this.profileImage = profileImage;
+    }
+
+    public boolean valid() {
+        return valid;
+    }
+
+    public void setValid(boolean valid) {
+        this.valid = valid;
     }
 }

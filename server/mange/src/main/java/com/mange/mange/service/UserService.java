@@ -1,14 +1,14 @@
 package com.mange.mange.service;
 
-import com.mange.mange.models.User;
-import com.mange.mange.repository.UserRepository;
-import com.mange.mange.DTO.NewUserDTO;
-import com.mange.mange.exceptions.UserAlreadyExistsException;
+import java.util.List;
+
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
 
-import java.util.List;
-import java.util.Optional;
+import com.mange.mange.DTO.NewUserDTO;
+import com.mange.mange.exceptions.UserAlreadyExistsException;
+import com.mange.mange.models.User;
+import com.mange.mange.repository.UserRepository;
 
 @Service
 public class UserService {
@@ -21,9 +21,12 @@ public class UserService {
     }
 
     public User createUser(NewUserDTO newUserDTO) {
+        System.out.println("Checking if user exists: " + newUserDTO.getEmail());
         if (userRepository.findByEmail(newUserDTO.getEmail()).isPresent()) {
+            System.out.println("User already exists, throwing UserAlreadyExistsException");
             throw new UserAlreadyExistsException("User with email " + newUserDTO.getEmail() + " already exists");
         }
+        System.out.println("User does not exist, creating new user");
 
         User user = new User(
                 newUserDTO.getFirstName(),
@@ -69,5 +72,30 @@ public class UserService {
             throw new RuntimeException("User not found");
         }
         userRepository.deleteById(id);
+    }
+
+    public boolean validateUserAndUpdateStatus(String email, String password) {
+        User user = getUserByEmail(email);
+        if (user.checkPassword(password)) {
+            user.setValid(true);
+            userRepository.save(user);
+            return true;
+        }
+        return false;
+    }
+
+    public boolean authenticateUser(String email, String password) {
+        try {
+            User user = getUserByEmail(email);
+            if (user.checkPassword(password)) {
+//                user.setValid(true);
+                userRepository.save(user);
+                return true;
+            }
+        } catch (RuntimeException e) {
+            // User not found
+            return false;
+        }
+        return false;
     }
 }

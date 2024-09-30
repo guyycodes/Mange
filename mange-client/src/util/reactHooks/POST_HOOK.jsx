@@ -33,12 +33,9 @@ export const USE_CUSTOM_POST_HOOK = (url, method = 'POST') => {
         data: data,  // Pass object directly
         headers: { 'Content-Type': 'application/json' }  // Optional: Axios sets it automatically for objects
       });
-      if (result.status >= 200 && result.status < 300) {
-        setResponse(result);
-        return result; // Return the response data
-      } else {
-        throw new Error(`HTTP error! status: ${result.status}`);
-      }
+      
+      setResponse(result);
+      return result; // Return the entire response object
     } catch (err) {
       // Capture the error message from the server response
     if (err.response) {

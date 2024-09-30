@@ -1,2 +1,0 @@
-export { RegistrationForm } from './FormElements'
-

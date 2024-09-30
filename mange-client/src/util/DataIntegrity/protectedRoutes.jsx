@@ -3,7 +3,6 @@ import { USE_CUSTOM_GET_HOOK } from "../reactHooks/GET_HOOK";
 import React, {useState, useEffect} from "react";
 import {
     HOME,
-    REGISTRATION,
   } from '../actions/actions';
   import { useRouteContext } from '../context/routeContext';
 
@@ -20,14 +19,15 @@ import {
 export const ProtectedRoutes = ({ component: Component, endpoint, checkAuth = false }) => {
     const { fetchData, loading, error, response } = USE_CUSTOM_GET_HOOK(endpoint);
     const [isAuthenticated, setIsAuthenticated] = useState(null);
-    const { dispatch, routeContext } = useRouteContext();
+    const { dispatch } = useRouteContext();
+    const routeContext = useRouteContext();
 
     /**
      * Handles routing based on the clicked link.
      * @param {string} clickedText - The text of the clicked link
      */
     const handleRouting = (clickedText) => {
-        dispatch({ type: REGISTRATION, payload: clickedText === 'Registration' ? 1 : 0 });
+    
         dispatch({ type: HOME, payload: clickedText === 'Home' ? 1 : 0 });
     };
 
@@ -37,7 +37,8 @@ export const ProtectedRoutes = ({ component: Component, endpoint, checkAuth = fa
      * @returns {string|null} The JWT if found, null otherwise
      */
     const getJWTFromContext = (context) => {
-        const jwt = context?.JWT;
+        
+        const {jwt} = context;
         if (jwt) {
             console.log('JWT value:', jwt);
             return jwt;
@@ -58,16 +59,26 @@ export const ProtectedRoutes = ({ component: Component, endpoint, checkAuth = fa
 
         const token = getJWTFromContext(routeContext);
         if (!token) return false;
-
+        
         const decodedToken = jwtDecode(token);
         if (decodedToken.exp < (Date.now() / 1000)) return false;
 
         if (data === 'skip') {
-            return decodedToken.exp > (Date.now() / 1000);
+            const isValid = decodedToken.exp > (Date.now() / 1000);
+            if (isValid) {
+                localStorage.setItem('jwt', token);
+                localStorage.setItem('isAuthenticated', 'true');
+            }
+            return isValid;
         }
 
         if (data && decodedToken) {
-            return (decodedToken.data.id === data.me.id) && (decodedToken.data.email === data.me.email);
+            const isValid = (decodedToken.data.id === data.me.id) && (decodedToken.data.email === data.me.email);
+            if (isValid) {
+                localStorage.setItem('jwt', token);
+                localStorage.setItem('isAuthenticated', 'true');
+            }
+            return isValid;
         }
 
         if (error) {
@@ -83,7 +94,7 @@ export const ProtectedRoutes = ({ component: Component, endpoint, checkAuth = fa
          * Checks authentication status and updates state.
          */
         const checkAuthentication = async () => {
-            if (checkAuth) {
+            if (checkAuth) { // will check if the use is authenticated
                 const { data, loading, error } = await fetchData();
                 if (!loading) {
                     const auth = authCheck(data, loading, error);
@@ -106,7 +117,7 @@ export const ProtectedRoutes = ({ component: Component, endpoint, checkAuth = fa
     if (isAuthenticated) {
         return <Component />;
     } else {
-        handleRouting('Registration');
+        handleRouting('Home');
         return null;
     }
 }

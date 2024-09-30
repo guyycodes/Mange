@@ -43,6 +43,14 @@ docker run --name spring-boot-app \
   --network app-network \
   -p 8080:8080 \
   -v $(pwd)/google-credentials.json:/app/google-credentials.json \
+  -e SPRING_DATASOURCE_URL='jdbc:mysql://localhost:3306/mange-java' \
+  -e SPRING_DATASOURCE_USERNAME='devs' \
+  -e SPRING_DATASOURCE_PASSWORD='devspassword' \
+  -e SPRING_MAIL_HOST='smtp.fastmail.com' \
+  -e SPRING_MAIL_PORT='465' \
+  -e SPRING_MAIL_USERNAME='guymorganb@levelupco.com' \
+  -e SPRING_MAIL_PASSWORD='6j5c77375r4w9u9k' \
+  -e SPRING_CLOUD_GCP_PROJECT_ID='gemini-healthrecomendations' \
   -d spring-boot-app
 
 * verify setup"

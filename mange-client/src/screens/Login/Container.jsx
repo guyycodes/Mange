@@ -1,8 +1,8 @@
 import { Box, Button, Checkbox, CircularProgress, FormControlLabel, Modal, Typography } from "@mui/material";
-import React, { useState } from "react";
+import React, { useEffect, useState } from "react";
 import styled from "styled-components";
 import { termsAndConditions } from '../../assets/templates/terms.js';
-import { FALLBACK, INVALID_USER, JWT, VALID_USER} from '../../util/actions/actions';
+import { FALLBACK, INVALID_USER, JWT, VALID_USER, VERIFY_LOGIN} from '../../util/actions/actions';
 import { useRouteContext } from '../../util/context/routeContext.jsx';
 import { isSHA256 } from '../../util/DataIntegrity/index.js';
 import { USE_CUSTOM_POST_HOOK } from "../../util/reactHooks/POST_HOOK.jsx";
@@ -31,18 +31,35 @@ const FullScreenSpinner = styled.div`
  * @param {string} [props.checksum] - SHA256 checksum for account verification
  * @returns {React.Component} A component that renders sign-in and account creation forms
  */
-export const SignInSection = ({ checksum }) => { // the checksum is passed all the way down to the form, then passed as formData.key
+export const SignInSection = ({ authFailure, validationSequence }) => { // the checksum is passed all the way down to the form, then passed as formData.key
 
     const { dispatch } = useRouteContext();
     const [modalOpen, setModalOpen] = useState(false);
     const [termsAccepted, setTermsAccepted] = useState(false);
     const [createUser, setCreateUser] = useState(false);
     const [formsData, setFormsData] = useState()
-    const [askNewUser, setAskNewUser] = useState(false)
+    const [newUser, setNewUser] = useState(false)
     const [spinner, setSpinner] = useState()
     const [fadeOut, setFadeOut] = useState(false);
     const [fullScreenSpinner, setFullScreenSpinner] = useState(false);
-    const [userValidation, setUserValidation] = useState(false);
+    
+    const [userAuthFailure, setUserAuthFailure] = useState(authFailure);
+
+    const [conflict, setConflict] = useState(false)
+
+      /**
+   * Handles routing based on the clicked link.
+   *
+   * @function
+   * @param {string} clickedText - The text of the clicked link
+   */
+      const setContext = (result, data) => {
+        if (result === 'jwt') {
+          dispatch({ type: JWT, payload: data });
+        } else if (result === 'validUser') {
+          dispatch({ type: VALID_USER, payload: 1 });
+        }
+      };
 
     /**
    * Custom hook to send the form data to the server.
@@ -55,18 +72,17 @@ export const SignInSection = ({ checksum }) => { // the checksum is passed all t
         sendRequest: UseHook_SendRequest,
         loading,
         error: formError,
-        response,
+        response: postResponse,
         LoadComponent: LoadingStatusIndicator
     } = USE_CUSTOM_POST_HOOK('http://localhost:8080/api/users/create', 'POST');
 
-
-  const handleRouting = (result, data) => {
-      dispatch({ type: VALID_USER, payload: result === 'ValidUser' ? 1 : 0 });
-      dispatch({ type: VERIFY_LOGIN, payload: result === 'VerifyLogin' ? 1 : 0 });
-      dispatch({ type: INVALID_USER, payload: result === 'InvalidUser' ? 1 : 0 });
-      dispatch({ type: FALLBACK, payload: result === 'Fallback' ? 1 : 0 });
-      dispatch({ type: JWT, payload: result === 'ValidUser' ? data : null });
-    };
+    const {
+      sendRequest: UseHook_LoginRequest,
+      isLoading,
+      error: Error,
+      response: Response,
+      LoadComponent: StatusIndicator
+  } = USE_CUSTOM_POST_HOOK('http://localhost:8080/api/users/login', 'POST');
 
   /**
    * Submits user data to the server for account creation.
@@ -74,46 +90,32 @@ export const SignInSection = ({ checksum }) => { // the checksum is passed all t
    * @param {string} theFormData.role - User role (e.g., 'user')
    */
   const submitUser = async (theFormData) =>{
-  /// this handles the submission of a new user
+  /// this handles a new user
     try{
-      // call server and send the data
-      if(userValidation){
-
-        setSpinner(true);
-
-        setTimeout(() => {
-         // Get the query string which starts with '?' and remove the '?' with slice(1)
-          const queryString = window.location.search.slice(1);
-
-          // Create a URLSearchParams object from the query string
-          const params = new URLSearchParams(queryString);
-
-          // Get the value of the 'token' parameter
-          const token = params.get('token');
-
-          handleRouting('ValidUser', token)
-        }, 2000);
-
-      }else if(termsAccepted){
+      // this is for a user who has recieve the email and comes to verify
+      if(termsAccepted){
 
         setSpinner(true);
         setTimeout(async() => {
         const response = await UseHook_SendRequest(theFormData) //'http://localhost:3000/api/signup/create'
           
         console.log("the form data: ", theFormData)
-        console.log("response : ", response)
-        console.log("response.status : ", response.status)
+        console.log("postResponse : ", postResponse)
+       
 
-        const data = await response.text();
-
-        if(response.status == 200){
-          
-          setCreateUser(false);
-          setAskNewUser(true) // if user doesnt exist
+        if(response?.status === 200){
+          // if user doesnt exist
+          setCreateUser(false); // sets the login form to show closing the create user form
+          setNewUser(true)  // set the newUser state. causes the cancel button to hide
           setSpinner(false);
-        }else{
-          handleRouting('Fallback')
+          return
         }
+          setCreateUser(false); // sets the login form to show closing the create user form
+          setConflict(true);
+          setSpinner(false);
+          
+          // handleRouting('Fallback')
+       
         console.log("new user submitting: ", theFormData)
       }, 2000); 
 
@@ -130,7 +132,8 @@ export const SignInSection = ({ checksum }) => { // the checksum is passed all t
      * @param {Object} dataFromForm - User form data
      */
     const handleAcceptTerms = (dataFromForm) => {
-      setFormsData(dataFromForm)
+      setFormsData(dataFromForm);
+
     };
 
     /**
@@ -159,6 +162,10 @@ export const SignInSection = ({ checksum }) => { // the checksum is passed all t
     </>
   );
 
+  const handleClick = () => {
+    setModalOpen(false);
+  };
+
     return (
         <>
         <Box
@@ -172,14 +179,18 @@ export const SignInSection = ({ checksum }) => { // the checksum is passed all t
       }}
     >
           <Box className='form'>
-            { // this turnery will the user to accept the terms, or try to login.
+            { // controls which form is displayed
             createUser ? 
             <CreateAccountForm 
               setTermsAccepted={setTermsAccepted} 
               handleAcceptTerms={handleAcceptTerms}
               openModal={setModalOpen} 
-              createUser={setCreateUser} 
-            /> : <SignInForm createUser={setCreateUser} UseHook_SendRequest={UseHook_SendRequest}/> // sign in form
+              createUser={setCreateUser}  // controls which form we are seeeing, login or create user
+            /> : <SignInForm 
+                validationSequence={validationSequence} 
+                createUser={setCreateUser} 
+                UseHook_LoginRequest={UseHook_LoginRequest} // sign in form
+                setContext={setContext}/>
             }
           </Box>
 
@@ -204,16 +215,18 @@ export const SignInSection = ({ checksum }) => { // the checksum is passed all t
               }}>
                 {/* Conditionally render the buttons depending on if theyve been clicked */}
               <Typography id="modal-modal-title" variant="h6" component="h2">
-               {askNewUser ? 'We didnt find and account for those credentials.\n Create an account?' : 'Terms & Conditions'}
+               {newUser ? "Please Check your email, we've sent you a link to verify your account." 
+                  : conflict ? 'Oops! Looks like you already have an account with us.'
+                  : 'Terms and Conditions'}
               </Typography>
               {
-                spinner ? <CircularProgress /> :
+                (spinner && !newUser) ? <CircularProgress /> : newUser ? null : conflict ? null : 
                   <Typography id="modal-modal-description" sx={{ mt: 2, maxHeight: 300, overflow: 'auto' }}>
                   {renderTermsAndConditions()}
                 </Typography>
               }
               {
-                spinner ? null :
+                spinner ? null : newUser ? null : conflict ? null :
                 <FormControlLabel
                 control={<Checkbox checked={termsAccepted} onChange={(e) => setTermsAccepted(e.target.checked)} />}
                 label="I accept the terms and conditions"
@@ -226,13 +239,17 @@ export const SignInSection = ({ checksum }) => { // the checksum is passed all t
                       variant="contained" 
                       color="primary" 
                       onClick={() => {
-                        askNewUser ? sendConfirmation(formsData) : submitUser(formsData)
+                        newUser || conflict ? handleClick() : submitUser(formsData)
                       }}>
                       OK
                     </Button>
-                    <Button variant="outlined" color="secondary" onClick={() => {setTermsAccepted(false); setModalOpen(false);}}>
-                        Cancel
-                    </Button>
+                    {/* hide the cancel button after they accept terms */}
+                    {!newUser && !conflict ? <Button 
+                      variant="outlined" 
+                      color="secondary" 
+                      onClick={() => {setTermsAccepted(false); setModalOpen(false);}}>
+                          Cancel
+                    </Button> : null}
                 </Box>
               }
             </Box>

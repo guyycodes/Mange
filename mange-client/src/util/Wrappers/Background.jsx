@@ -1,10 +1,19 @@
 import { Box } from '@mui/material';
-import React from 'react';
+import React, { useState, useEffect } from 'react';
 import { useRouteContext } from '../context/routeContext';
 
 export const BackgroundWrapper = ({ children }) => {
   const routeContext = useRouteContext();
-  const isLoginPage = routeContext.registration === 1;
+  const [isLoginPage, setIsLoginPage] = useState(false);
+
+  useEffect(() => {
+    const updateBackground = () => {
+      const isLogin = routeContext.registration === 1 || window.location.pathname.endsWith('/login');
+      setIsLoginPage(isLogin);
+    };
+
+    updateBackground();
+  }, [routeContext]); // This will run whenever the routeContext changes
 
   return (
     <Box
