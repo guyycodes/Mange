@@ -1,7 +1,10 @@
 package com.mange.mange.service;
 
 import java.util.List;
+import java.util.Optional;
 
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
 
@@ -12,6 +15,8 @@ import com.mange.mange.repository.UserRepository;
 
 @Service
 public class UserService {
+
+    private static final Logger logger = LoggerFactory.getLogger(UserService.class);
 
     private final UserRepository userRepository;
 
@@ -54,6 +59,18 @@ public class UserService {
         return userRepository.findById(id)
                 .orElseThrow(() -> new RuntimeException("User not found"));
     }
+
+//    public User getUserByEmail(String email) {
+//        logger.info("Attempting to find user with email: {}", email);
+//        Optional<User> userOptional = userRepository.findByEmail(email);
+//        if (userOptional.isPresent()) {
+//            logger.info("User found with email: {}", email);
+//            return userOptional.get();
+//        } else {
+//            logger.warn("User not found with email: {}", email);
+//            throw new RuntimeException("User not found with email: " + email);
+//        }
+//    }
 
     public User getUserByEmail(String email) {
         return userRepository.findByEmail(email)
@@ -101,7 +118,6 @@ public class UserService {
         try {
             User user = getUserByEmail(email);
             if (user.checkPassword(password)) {
-//                user.setValid(true);
                 userRepository.save(user);
                 return true;
             }

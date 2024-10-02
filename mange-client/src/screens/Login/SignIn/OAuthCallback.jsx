@@ -36,7 +36,7 @@ export const OAuthCallback = () => {
       const jwt = jwtFromUrl || jwtFromCookie;
 
       if (jwt) {
-        console.log('JWT captured:', jwt);
+        // console.log('JWT captured:', jwt);
         setContext('jwt', jwt);
         navigate('/mange/authenticated');
       } else {

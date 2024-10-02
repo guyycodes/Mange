@@ -1,13 +1,11 @@
-import React, { useState, useEffect, useRef } from 'react';
-import { motion } from "framer-motion";
-import { Box, Typography, Button, IconButton, Switch, TextField } from '@mui/material';
 import ChevronRightIcon from '@mui/icons-material/ChevronRight';
-import SendIcon from '@mui/icons-material/Send';
 import ImageIcon from '@mui/icons-material/Image';
 import LockIcon from '@mui/icons-material/Lock';
-import icons from '../../assets/iconRegistry';
+import SendIcon from '@mui/icons-material/Send';
+import { Box, Button, IconButton, Switch, TextField, Typography } from '@mui/material';
+import { motion } from "framer-motion";
+import React, { useEffect, useRef, useState } from 'react';
 import { SidebarMenu } from './PopoutElements/SidebarMenu';
-import { SpaceBar } from '@mui/icons-material';
 
 
 export const SlideOut = ({ handleTabSelection }) => {

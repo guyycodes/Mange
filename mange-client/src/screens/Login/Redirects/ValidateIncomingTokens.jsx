@@ -42,7 +42,7 @@ const TokenValidationLoadingIndicator = () => (
   </FullScreenSpinner>
 );
 
-export const ValidateToken = ({ setUserValidationSequence, setAuthFailure }) => {
+export const ValidateToken = ({ setUserValidationSequence, setAuthFailure, setPasswordRecovery, setRecoveryFailure }) => {
   const { dispatch } = useRouteContext();
   const navigate = useNavigate();
 
@@ -52,6 +52,7 @@ export const ValidateToken = ({ setUserValidationSequence, setAuthFailure }) => 
     error: tokenValidationError,
     response: tokenValidationResponse,
   } = USE_CUSTOM_POST_HOOK('http://localhost:8080/api/validate-token', 'POST');
+
 
   const setContext = useCallback((result, data) => {
     if (result === 'jwt') {
@@ -65,7 +66,8 @@ export const ValidateToken = ({ setUserValidationSequence, setAuthFailure }) => 
         const result = await validateTokenRequest({ token });
         if (result && result.data && result.data.valid) {
           setUserValidationSequence(true);
-          setContext('ValidUser', result.data);
+          setContext('jwt', result.data);
+          return true 
         } else {
           setAuthFailure(true);
           alert("The verification link is invalid or has expired. Please request a new verification email.");
@@ -76,11 +78,33 @@ export const ValidateToken = ({ setUserValidationSequence, setAuthFailure }) => 
       }
     };
 
+    const validatePasswordToken = async (token) => {
+      try {
+
+        let result = await validateToken(token);
+        
+        if (result) {
+          setPasswordRecovery(true);
+          navigate('/passwordReset');
+        } else {
+          setRecoveryFailure(true);
+          alert("The verification link is invalid or has expired. Please restart you password recovery process.");
+        }
+      } catch (error) {
+        console.error('Error validating token:', error);
+        alert("An error occurred while verifying your account. Please try again later or contact support.");
+      }
+    };
+
     const queryParams = new URLSearchParams(window.location.search);
     const token = queryParams.get('token');
+    const passwordToken = queryParams.get('password');
 
     if (token) {
       validateToken(token);
+    }
+    if(passwordToken){
+      validatePasswordToken(passwordToken);
     }
   }, [validateTokenRequest, setUserValidationSequence, setContext, setAuthFailure]);
 

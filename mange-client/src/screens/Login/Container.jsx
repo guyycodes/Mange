@@ -31,7 +31,7 @@ const FullScreenSpinner = styled.div`
  * @param {string} [props.checksum] - SHA256 checksum for account verification
  * @returns {React.Component} A component that renders sign-in and account creation forms
  */
-export const SignInSection = ({ authFailure, validationSequence }) => { // the checksum is passed all the way down to the form, then passed as formData.key
+export const SignInSection = ({ authFailure, validationSequence, setUserValidationSequence , setPasswordRecovery, passwordRecovery, recoveryFailure}) => {
 
     const { dispatch } = useRouteContext();
     const [modalOpen, setModalOpen] = useState(false);
@@ -162,6 +162,7 @@ export const SignInSection = ({ authFailure, validationSequence }) => { // the c
 
   const handleClick = () => {
     setModalOpen(false);
+    window.location.reload();
   };
 
     return (
@@ -184,11 +185,16 @@ export const SignInSection = ({ authFailure, validationSequence }) => { // the c
               handleAcceptTerms={handleAcceptTerms}
               openModal={setModalOpen} 
               createUser={setCreateUser}  // controls which form we are seeeing, login or create user
-            /> : <SignInForm 
-                validationSequence={validationSequence} 
-                createUser={setCreateUser} 
-                UseHook_LoginRequest={UseHook_LoginRequest} // sign in form
-                setContext={setContext}/>
+            /> :
+            <SignInForm 
+              validationSequence={validationSequence}
+              setUserValidationSequence={setUserValidationSequence}
+              createUser={setCreateUser} 
+              UseHook_LoginRequest={UseHook_LoginRequest} // sign in form
+              setContext={setContext}
+              passwordRecovery={passwordRecovery}
+              setPasswordRecovery={setPasswordRecovery}
+            />
             }
           </Box>
 

@@ -1,14 +1,22 @@
-import React, { useState } from 'react';
-import { Box, Paper, Avatar, Typography, Grid, Card, CardContent, Button, Input } from '@mui/material';
-import { FormWithOutput } from './ContainerElements/Container';
-import { formStructure } from '../../assets/templates/formQuestions';
-import { SlideOut } from './Popout';
-import { SavedRecommendations } from './ContainerElements/RecomendationCard'
+import { Avatar, Box, Button, Grid, Input, Paper, Typography } from '@mui/material';
 import Pica from 'pica';
-
+import React, { useState } from 'react';
+import { useNavigate } from 'react-router-dom';
+import { formStructure } from '../assets/templates/formQuestions';
+import { JWT } from "../util/actions/actions";
+import { useRouteContext } from '../util/context/routeContext';
+import { SlideOut } from './Popout';
+import { FormWithOutput } from './GeminiRecomendations/Container';
+import { SavedRecommendations } from './GeminiRecomendations/RecomendationCard';
+import { ArticlesView } from './Articles/ArticleFeed';
+import { MobileAppView } from './MobileApp/MobileAppView';
+import { ContactContainer} from './Contact/ContactFormContainer';
 
 export const ProfileContainer = () => {
   const [selected, setSelected] = useState(0);
+  const navigate = useNavigate();
+  const { dispatch } = useRouteContext();
+  const routeContext = useRouteContext();
   const [recommendations, setRecommendations] = useState([
     { title: 'Recommendation 1', content: 'Content for recommendation 1' },
     { title: 'Recommendation 2', content: 'Content for recommendation 2' },
@@ -19,6 +27,38 @@ export const ProfileContainer = () => {
 
   const handleTabSelection = (int) => {
     setSelected(int);
+    // if tab selected is 3...conditionally render a contact for 
+  };
+
+  const renderSelectedView = () => {
+    switch (selected) {
+      case 0:
+        return (
+          <Grid container spacing={2}>
+            <Grid item xs={12} md={8}>
+              <FormWithOutput formStructure={formStructure}/>
+            </Grid>
+            <Grid item xs={12} md={4}>
+              <Typography variant="h5" gutterBottom>Recommendations</Typography>
+              <Grid container spacing={2}>
+                {recommendations.map((rec, index) => (
+                  <Grid item xs={12} key={index}>
+                    <SavedRecommendations/>
+                  </Grid>
+                ))}
+              </Grid>
+            </Grid>
+          </Grid>
+        );
+      case 1:
+        return <ArticlesView />;
+      case 2:
+        return <MobileAppView />;
+      case 3:
+        return <ContactContainer />;
+      default:
+        return null;
+    }
   };
 
 // convert banner image into base64 string
@@ -90,8 +130,26 @@ const handleImageUpload = (event) => {
   };
 
   const handleLogout = () => {
+
+    
     // logout logic
-    console.log('Logout');
+    try {
+      const { jwt } = routeContext;
+      if (jwt) {
+        dispatch({ type: JWT, payload: '' });
+      }
+      // Check if the token exists
+      const token = localStorage.getItem('gemini_jwt');
+      if (token) {
+        // If token exists, remove it
+        localStorage.removeItem('gemini_jwt');
+      } 
+    
+    navigate('/logout')
+    } catch (error) {
+      console.error('Error during token deletion or navigation:', error);
+      navigate('/');
+    }
   };
 
   return (
@@ -154,7 +212,7 @@ const handleImageUpload = (event) => {
           </Button>
         </Box>
 
-        <Box sx={{ px: 2, width: '100%', boxSizing: 'border-box' }}>
+        {/* <Box sx={{ px: 2, width: '100%', boxSizing: 'border-box' }}>
           <Grid container spacing={2} sx={{ width: '100%', margin: 0 }}>
             <Grid item xs={12} md={8}>
 
@@ -172,8 +230,13 @@ const handleImageUpload = (event) => {
               </Grid>
             </Grid>
           </Grid>
-        </Box>
+        </Box> */}
+
+      <Box sx={{ px: 2, width: '100%', boxSizing: 'border-box' }}>
+          {renderSelectedView()}
       </Box>
+      </Box>
+      
       <Box sx={{ position: 'fixed', top: 0, left: 0, width: 'auto', height: '100vh', zIndex: 1000 }}>
         <SlideOut handleTabSelection={handleTabSelection} selected={selected}/>
       </Box>

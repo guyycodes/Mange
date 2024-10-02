@@ -1,6 +1,7 @@
 import { jwtDecode } from 'jwt-decode';
 import { USE_CUSTOM_GET_HOOK } from "../reactHooks/GET_HOOK";
 import React, {useState, useEffect} from "react";
+import { useNavigate } from 'react-router-dom';
 
   import { useRouteContext } from '../context/routeContext';
 
@@ -18,22 +19,41 @@ export const ProtectedRoutes = ({ component: Component, endpoint, checkAuth = fa
     const { fetchData, loading, error, response } = USE_CUSTOM_GET_HOOK(endpoint);
     const [isAuthenticated, setIsAuthenticated] = useState(null);
     const routeContext = useRouteContext();
+    const navigate = useNavigate()
+/**
+ * Retrieves the JWT from the context or local storage.
+ * @param {Object} context - The route context
+ * @returns {string|null} The JWT if found, null otherwise
+ */
+const getJWTFromContext = (context) => {
+    // First, try to get JWT from context
+    const { jwt } = context;
+    if (jwt) {
+        // console.log('JWT found in context');
 
-    /**
-     * Retrieves the JWT from the context.
-     * @param {Object} context - The route context
-     * @returns {string|null} The JWT if found, null otherwise
-     */
-    const getJWTFromContext = (context) => {
-        
-        const {jwt} = context;
-        if (jwt) {
-            console.log('JWT value:', jwt);
-            return jwt;
-        }
-        console.log('JWT not found in context');
+        // handle the case for logout
+        if(location.pathname.endsWith('/logout')) return;
+
+        // Save JWT to local storage
+        localStorage.setItem('gemini_jwt', jwt);
+        return jwt;
+    }
+
+    console.log('JWT not found in context, checking local storage');
+
+    // If not in context, try to get from local storage
+    const storedJWT = localStorage.getItem('gemini_jwt');
+    if (storedJWT) {
+        console.log('JWT found in local storage');
+        return storedJWT;
+    }
+
+    // If JWT is not found in either context or local storage
+    console.log('JWT not found in context or local storage');
+    if(location.pathname.endsWith('/logout')){
         return null;
-    };
+    }
+};
 
     /**
      * Checks authentication status.
@@ -51,6 +71,7 @@ export const ProtectedRoutes = ({ component: Component, endpoint, checkAuth = fa
         const decodedToken = jwtDecode(token);
         if (decodedToken.exp < (Date.now() / 1000)) return false;
 
+        
         if (data === 'skip') {
             return decodedToken.exp > (Date.now() / 1000);
         }
@@ -95,8 +116,7 @@ export const ProtectedRoutes = ({ component: Component, endpoint, checkAuth = fa
     if (isAuthenticated) {
         return <Component />;
     } else {
-       
-        return null;
+        return null
     }
 }
 

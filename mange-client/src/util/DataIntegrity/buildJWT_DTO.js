@@ -20,7 +20,7 @@ export const buildJwtDto = (email, password, existingJwt = null) => {
         expirationDate: expirationDate.toISOString(),
         timeUntilExpiration: 3600, // 1 hour
         userExists: true,
-        valid: false
+        valid: true
       };
     }
   };

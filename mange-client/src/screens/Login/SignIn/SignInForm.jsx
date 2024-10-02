@@ -13,11 +13,33 @@ import {
   } from "@mui/material";
 import { validate } from '../../../util/validate/validateLogin'
 import { useRouteContext } from '../../../util/context/routeContext';
-import { VALID_USER, JWT } from "../../../util/actions/actions";
+import { ForgotPasswordModal } from './PasswordReset'; // Adjust the import path as needed
 import { buildJwtDto } from "../../../util/DataIntegrity/buildJWT_DTO";
 import { useNavigate } from 'react-router-dom';
 
-export const SignInForm = ({ createUser, UseHook_LoginRequest, validationSequence, setContext }) => {
+const LinkButton = styled(Button)(() => ({
+  padding: 0,
+  textTransform: 'none',
+  fontWeight: 400,
+  fontSize: '0.875rem',
+  lineHeight: 1,
+  letterSpacing: '.01071em',
+ 
+  '&:hover': {
+    backgroundColor: 'transparent',
+    textDecoration: 'underline',
+  },
+}));
+
+export const SignInForm = ({ 
+  createUser, 
+  UseHook_LoginRequest, 
+  validationSequence, 
+  setContext, 
+  setUserValidationSequence, 
+  passwordRecovery, 
+  setPasswordRecovery 
+}) => {
 
   const loginFormRef = useRef(null);
   const routeContext = useRouteContext();
@@ -26,6 +48,7 @@ export const SignInForm = ({ createUser, UseHook_LoginRequest, validationSequenc
   const storedEmail = storedRememberMe ? localStorage.getItem("MangeEmail") : "";
   const storedPassword = storedRememberMe ? localStorage.getItem("MangePassword") : "";
   const [rememberMe, setRememberMe] = useState(localStorage.getItem("MangeRememberMe") === "true");
+  const [isForgotPasswordModalOpen, setIsForgotPasswordModalOpen] = useState(passwordRecovery);
   const [emailError, setEmailError] = useState(false);
   const [passwordError, setPasswordError] = useState(false);
   const [password, setPassword] = useState(storedPassword);
@@ -82,6 +105,7 @@ export const SignInForm = ({ createUser, UseHook_LoginRequest, validationSequenc
               console.log('jwt', jwt);
  
               setContext('jwt', jwt);
+              setUserValidationSequence(false)
               navigate('/mange/authenticated')
             }else{
               console.log('Login failed');
@@ -115,6 +139,10 @@ export const SignInForm = ({ createUser, UseHook_LoginRequest, validationSequenc
     const { value } = event.target;
     setEmail(value);
   }
+
+  const recoverPassword = () => {
+    setIsForgotPasswordModalOpen(true);
+  };
 
   async function fetchGoogleAuth() {
     try {
@@ -190,9 +218,10 @@ export const SignInForm = ({ createUser, UseHook_LoginRequest, validationSequenc
                       onChange={handleRememberMe}
                     />
                   {
-                  !validationSequence ? <Link href="#" className="description-2">
-                      Forgot password?
-                    </Link> : null 
+                  !validationSequence ?     
+                  <LinkButton onClick={recoverPassword} className="description-2">
+                    Forgot password?
+                  </LinkButton> : null 
                   }
 
                   </Box> 
@@ -241,11 +270,12 @@ export const SignInForm = ({ createUser, UseHook_LoginRequest, validationSequenc
             </Box>
 
             {
-            !validationSequence ? <Box className="sign-up-offer">
+            !validationSequence ? 
+            <Box className="sign-up-offer">
               <Typography className="description-3">
                 Don't have an account?
               </Typography>
-              <Button 
+              <Button
               className="description-4" 
               onClick={() => {createUser(true)}}>
                 Sign up now
@@ -265,6 +295,12 @@ export const SignInForm = ({ createUser, UseHook_LoginRequest, validationSequenc
         <Box className="bottom-panel">
           <Typography className="head"></Typography>
         </Box>
+        <ForgotPasswordModal
+          open={isForgotPasswordModalOpen}
+          onClose={() => setIsForgotPasswordModalOpen(false)}
+          passwordRecovery={passwordRecovery}
+          setPasswordRecovery={setPasswordRecovery}
+        />
       </StyledFrame>
     );
   };

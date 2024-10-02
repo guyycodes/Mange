@@ -113,12 +113,13 @@ public class UserController {
 
     @PostMapping("/login")
     public ResponseEntity<?> login(@RequestBody JWT_DTO jwtDto) {
-        if (jwtUtil.checkTokenValidity(jwtDto)) {
+        // take the incoming email check if the user has been validated against the database
+        if (userService.isValidatedUser(jwtDto.getEmail())) {
             System.out.println("Login successful for email: " + jwtDto.getEmail());
             System.out.println("Password: " + jwtDto.getPassword());
 
-            // updates the 'valid' field on the user
-            boolean isValid = userService.validateUserAndUpdateStatus(jwtDto.getEmail(), jwtDto.getPassword());
+            // check the incoming password is valid against the database
+            boolean isValid = userService.authenticateUser(jwtDto.getEmail(), jwtDto.getPassword());
 
             if (isValid) {
                 System.out.println("User validated successfully");
@@ -127,10 +128,12 @@ public class UserController {
             } else {
                 return ResponseEntity.status(HttpStatus.UNAUTHORIZED).body("Invalid credentials");
             }
-        } else {
+        } else { // if there is a new user run this
             // attempt to authenticate with email and password
             boolean isAuthenticated = userService.authenticateUser(jwtDto.getEmail(), jwtDto.getPassword());
-            boolean isValidated = userService.isValidatedUser(jwtDto.getEmail());
+            // check if passwords match and set the user as validated in the database
+            boolean isValidated = userService.validateUserAndUpdateStatus(jwtDto.getEmail(), jwtDto.getPassword());
+
             if (isValidated && isAuthenticated) {
                 jwtDto.setValid(true);
                 String token = jwtUtil.generateToken(jwtDto);

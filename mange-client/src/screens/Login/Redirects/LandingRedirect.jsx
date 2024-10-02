@@ -1,8 +1,8 @@
 import { Alert, Box, Container, Fade, LinearProgress, Paper, Typography } from '@mui/material';
 import React, { useEffect, useState } from 'react';
 import icons from '../../../assets/iconRegistry';
-import { ProfileContainer } from '../../../components/Recomendations/index'
-import { JWT } from '../../../util/actions/actions';
+import { ProfileContainer } from '../../../components/index'
+import { useNavigate } from 'react-router-dom';
 import { useRouteContext } from '../../../util/context/routeContext';
 import { ProtectedRoutes } from '../../../util/DataIntegrity/protectedRoutes';
 // This component wraps the login sequence for validating a new user from their email sign up alert
@@ -28,7 +28,7 @@ const facts = [
  * @returns {React.ReactElement} The rendered ValidateToken component
  */
 export const Redirection = () => {
-
+const navigate = useNavigate();
   /**
    * Handles routing based on the clicked link.
    * @param {string} clickedText - The text of the clicked link
@@ -48,7 +48,7 @@ export const Redirection = () => {
      */
     const rotationInterval = setInterval(() => {
       setCurrentFact((prev) => (prev + 1) % facts.length);
-    }, 5000);
+    }, 3500);
 
     /**
      * Interval to update the progress bar during loading.
@@ -92,15 +92,19 @@ export const Redirection = () => {
           });
         }, 50);
 
-              // Update the URL without reloading the page
-      const newUrl = '/mange/authenticated?value=1';
-      window.history.pushState({ path: newUrl }, '', newUrl);
-
       } catch (error) {
         console.error('Validation failed:', error);
         setError('Validation failed.');
       } finally {
         setLoading(false);
+        if(location.pathname.endsWith('/logout')){
+          // delay so the fade out looks ok
+          setTimeout(() => {
+         
+            navigate('/')
+          }, 750);
+
+        }
       }
     };
 
@@ -163,7 +167,7 @@ export const Redirection = () => {
                   }}
                 />
                 <Typography variant="h5" component="h2" sx={{ mt: 4, mb: 2, fontWeight: 'bold', color: 'white' }}>
-                  Validating Your Account
+                  Managing Your Account
                 </Typography>
                 <Box sx={{ width: '100%', mb: 4, height: '4px' }}>
                   <LinearProgress variant="determinate" value={progress} />

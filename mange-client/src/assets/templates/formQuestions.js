@@ -60,8 +60,8 @@ export const formStructure = {
   },
   "Additional Information": [
     {
-      "name": "currentRoutine&Goals",
-      "label": "Briefly describe your current routine & any specific goals",
+      "name": "currentRoutine&Context",
+      "label": "Briefly describe yourself, any restrictions, your current routine & desired outcome",
       "type": "textarea"
     },
     {

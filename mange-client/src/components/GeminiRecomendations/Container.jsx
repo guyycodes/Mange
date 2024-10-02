@@ -1,7 +1,7 @@
 import { Box, CircularProgress, Snackbar } from '@mui/material';
 import React, { useState } from 'react';
-import { convertJsonToFormattedString } from '../../../util/dataObjects/transformData';
-import { USE_CUSTOM_POST_HOOK } from '../../../util/reactHooks/POST_HOOK';
+import { convertJsonToFormattedString } from '../../util/dataObjects/transformData';
+import { USE_CUSTOM_POST_HOOK } from '../../util/reactHooks/POST_HOOK';
 import { CreateRequest } from './BuildRequest';
 import { Form } from './Form';
 import { FancyOutputDisplay } from './FancyOutput';
