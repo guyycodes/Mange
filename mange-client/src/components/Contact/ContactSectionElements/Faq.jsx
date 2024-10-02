@@ -7,7 +7,7 @@ export const FAQAccordion = () => {
   return (
     <>
       <Typography variant="h4" align="center" gutterBottom>
-        Health & Wellness FAQs with Gemini AI
+        FAQs 
       </Typography>
       {faqData.map((faq, index) => (
         <Accordion key={index}>

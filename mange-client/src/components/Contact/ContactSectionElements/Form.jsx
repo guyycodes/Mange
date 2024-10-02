@@ -1,11 +1,16 @@
 import React, { useState } from 'react';
-import { Box, Typography, TextField, Button, Stack, Container, MenuItem } from '@mui/material';
+import { Box, Typography, TextField, Button, Stack, Container, MenuItem, Snackbar } from '@mui/material';
 import { Send } from '@mui/icons-material';
 import ArrowBackOutlinedIcon from '@mui/icons-material/ArrowBackOutlined';
 
 export const Contact = ({ displayForm }) => {
   const hoverBoxShadow = '0 8px 25px rgba(0, 0, 0, 0.15), 0 3px 6px rgba(0, 0, 0, 0.10)';
   const [subject, setSubject] = useState('');
+  const [name, setName] = useState('');
+  const [email, setEmail] = useState('');
+  const [message, setMessage] = useState('');
+  const [snackbarOpen, setSnackbarOpen] = useState(false);
+  const [snackbarMessage, setSnackbarMessage] = useState('');
 
   const subjects = [
     'Account Issues',
@@ -22,6 +27,34 @@ export const Contact = ({ displayForm }) => {
 
   const handleSubjectChange = (event) => {
     setSubject(event.target.value);
+  };
+
+  const handleSubmit = async (event) => {
+    event.preventDefault();
+    
+    try {
+      const response = await fetch('http://localhost:8080/api/contact-form', {
+        method: 'POST',
+        headers: {
+          'Content-Type': 'application/json',
+        },
+        body: JSON.stringify({ name, email, subject, message }),
+      });
+
+      if (response.ok) {
+        setSnackbarMessage('Your message has been sent successfully!');
+        setName('');
+        setEmail('');
+        setSubject('');
+        setMessage('');
+      } else {
+        setSnackbarMessage('Failed to send message. Check your email and try again.');
+      }
+    } catch (error) {
+      setSnackbarMessage('An error occurred. Please try again later.');
+    }
+
+    setSnackbarOpen(true);
   };
 
   return (
@@ -46,10 +79,27 @@ export const Contact = ({ displayForm }) => {
       </Typography>
 
       <Container maxWidth="sm" sx={{ my: 2 }}>
-        <form action="mailto:helpdesk@example.com" method="post" encType="text/plain">
+        <form onSubmit={handleSubmit}>
           <Stack spacing={2}>
-            <TextField fullWidth label="Name" name="Name" required variant="outlined" />
-            <TextField fullWidth label="Email" name="Email" type="email" required variant="outlined" />
+            <TextField 
+              fullWidth 
+              label="Name" 
+              name="Name" 
+              required 
+              variant="outlined" 
+              value={name}
+              onChange={(e) => setName(e.target.value)}
+            />
+            <TextField 
+              fullWidth 
+              label="Reply Email" 
+              name="Email" 
+              type="email" 
+              required 
+              variant="outlined" 
+              value={email}
+              onChange={(e) => setEmail(e.target.value)}
+            />
             <TextField
               fullWidth
               select
@@ -74,6 +124,8 @@ export const Contact = ({ displayForm }) => {
               rows={4}
               required
               variant="outlined"
+              value={message}
+              onChange={(e) => setMessage(e.target.value)}
             />
             <Stack direction={{ xs: 'column', sm: 'row' }} spacing={2} justifyContent="space-between">
               <Button
@@ -112,6 +164,12 @@ export const Contact = ({ displayForm }) => {
           </Stack>
         </form>
       </Container>
+      <Snackbar
+        open={snackbarOpen}
+        autoHideDuration={6000}
+        onClose={() => setSnackbarOpen(false)}
+        message={snackbarMessage}
+      />
     </Box>
   );
 };

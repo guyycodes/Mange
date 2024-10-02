@@ -19,7 +19,7 @@ export const ProtectedRoutes = ({ component: Component, endpoint, checkAuth = fa
     const { fetchData, loading, error, response } = USE_CUSTOM_GET_HOOK(endpoint);
     const [isAuthenticated, setIsAuthenticated] = useState(null);
     const routeContext = useRouteContext();
-    const navigate = useNavigate()
+    
 /**
  * Retrieves the JWT from the context or local storage.
  * @param {Object} context - The route context
@@ -39,12 +39,12 @@ const getJWTFromContext = (context) => {
         return jwt;
     }
 
-    console.log('JWT not found in context, checking local storage');
+    // console.log('JWT not found in context, checking local storage');
 
     // If not in context, try to get from local storage
     const storedJWT = localStorage.getItem('gemini_jwt');
     if (storedJWT) {
-        console.log('JWT found in local storage');
+        // console.log('JWT found in local storage');
         return storedJWT;
     }
 
